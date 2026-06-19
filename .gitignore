@@ -2,3 +2,4 @@ node_modules
 .commandcode
 .git/
 *.log
+docs

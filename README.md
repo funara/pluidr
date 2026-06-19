@@ -1,5 +1,9 @@
 # Pluidr
 
+[![npm version](https://img.shields.io/npm/v/pluidr)](https://www.npmjs.com/package/pluidr)
+[![npm downloads](https://img.shields.io/npm/dm/pluidr)](https://www.npmjs.com/package/pluidr)
+[![License](https://img.shields.io/npm/l/pluidr)](https://github.com/funara/pluidr/blob/main/LICENSE)
+
 **Plan · Build · Review · Debug** — opinionated engineering workflow installer for [OpenCode](https://opencode.ai).
 
 ## How it works

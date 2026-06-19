@@ -1,10 +1,31 @@
 {
   "name": "pluidr",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Opinionated Engineering Workflow for OpenCode — Plan, Build, Review.",
+  "keywords": [
+    "opencode",
+    "workflow",
+    "engineering",
+    "pipeline",
+    "ai-agents",
+    "code-review",
+    "debugging",
+    "planner",
+    "builder",
+    "cli"
+  ],
+  "license": "MIT",
   "type": "module",
   "bin": {
     "pluidr": "bin/pluidr.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/funara/pluidr.git"
+  },
+  "homepage": "https://github.com/funara/pluidr#readme",
+  "bugs": {
+    "url": "https://github.com/funara/pluidr/issues"
   },
   "engines": {
     "node": ">=18"
