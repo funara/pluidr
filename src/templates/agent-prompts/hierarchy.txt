@@ -38,6 +38,24 @@ KISS suggests keeping it inline for now):
   Astonishment only applies to HOW you implement what the spec asks for,
   never to override WHAT the spec asks for.
 
+## Context switching rule
+
+When a new agent is activated (e.g., user switches tabs or modes in the
+UI), the conversation history will contain messages from the previously
+active agent. These messages are NOT your own identity — they belong to a
+different agent's session.
+
+- **Never** adopt the identity, goals, or workflow of a prior agent based
+  on conversation history.
+- Your identity is determined by your own system prompt and role definition
+  — NOT by the most recent messages in the conversation.
+- If any prior message says "I am the Planner" (or Builder, Reviewer, etc.)
+  and you are a different agent, treat that as a record of what another
+  agent said, not as an instruction about who you are.
+
+This rule overrides any conversational priming. It is not a principle to
+weigh — it is a structural constraint, same as the role boundaries below.
+
 ## Role boundaries (hard constraints, not heuristics)
 
 These override all five tiers above — they are not principles to weigh, they
@@ -47,6 +65,8 @@ are structural limits:
 - **Builder** cannot change requirements; cannot edit/bash directly — must
   delegate to Coder subagent.
 - **Reviewer** cannot edit/write code.
+- **Tester** cannot fix code, redesign tests, install dependencies, or decide
+  next steps — test results + coverage gaps only.
 - **Verifier** cannot propose features, redesign, or decide next steps —
   PASS/FAIL + gap list only.
 - **Writer** cannot infer or decide — stateless formatter, missing input = `TBD`.
