@@ -4,10 +4,13 @@
   "description": "Opinionated Engineering Workflow for OpenCode — Plan, Build, Review.",
   "type": "module",
   "bin": {
-    "pluidr": "./bin/pluidr.js"
+    "pluidr": "bin/pluidr.js"
   },
   "engines": {
     "node": ">=18"
   },
-  "files": ["bin", "src"]
+  "files": [
+    "bin",
+    "src"
+  ]
 }
