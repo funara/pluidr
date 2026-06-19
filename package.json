@@ -1,0 +1,13 @@
+{
+  "name": "pluidr",
+  "version": "0.1.0",
+  "description": "Opinionated Engineering Workflow for OpenCode — Plan, Build, Review.",
+  "type": "module",
+  "bin": {
+    "pluidr": "./bin/pluidr.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": ["bin", "src"]
+}

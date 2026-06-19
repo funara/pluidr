@@ -1,0 +1,12 @@
+{
+  "reasoningHeavy": {
+    "provider": "opencode",
+    "model": "big-pickle",
+    "agents": ["planner", "reviewer", "debugger", "verifier"]
+  },
+  "fast": {
+    "provider": "opencode",
+    "model": "deepseek-v4-flash-free",
+    "agents": ["builder", "researcher", "coder", "writer"]
+  }
+}

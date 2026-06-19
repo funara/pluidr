@@ -1,0 +1,184 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["prompts/hierarchy.txt"],
+  "permission": {
+    "read": {
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "secrets/**": "deny"
+    }
+  },
+  "agent": {
+    "plan": { "hidden": true },
+    "build": { "hidden": true },
+
+    "planner": {
+      "mode": "primary",
+      "description": "Turns a user request into a verified PRD via Researcher/Writer/Verifier, then decides build-or-revise. Cannot write or edit code.",
+      "prompt": "{file:./prompts/planner.txt}",
+      "permission": {
+        "edit": "deny",
+        "write": "deny",
+        "bash": "deny",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "question": "allow",
+        "task": {
+          "*": "deny",
+          "researcher": "allow",
+          "writer": "allow",
+          "verifier": "allow"
+        }
+      }
+    },
+
+    "builder": {
+      "mode": "primary",
+      "description": "Executes a confirmed PRD by orchestrating Coder/Verifier/Writer. Cannot edit files, run bash, or change requirements directly.",
+      "prompt": "{file:./prompts/builder.txt}",
+      "permission": {
+        "edit": "deny",
+        "write": "deny",
+        "bash": "deny",
+        "question": "allow",
+        "task": {
+          "*": "deny",
+          "coder": "allow",
+          "verifier": "allow",
+          "writer": "allow"
+        }
+      }
+    },
+
+    "reviewer": {
+      "mode": "primary",
+      "temperature": 0.1,
+      "description": "Reviews completed work for traceability and regression risk via Verifier/Debugger/Researcher/Writer. Cannot edit or write code.",
+      "prompt": "{file:./prompts/reviewer.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "bash": {
+          "*": "deny",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git show*": "allow",
+          "git blame*": "allow",
+          "rg *": "allow"
+        },
+        "task": {
+          "*": "deny",
+          "verifier": "allow",
+          "debugger": "allow",
+          "researcher": "allow",
+          "writer": "allow"
+        }
+      }
+    },
+
+    "researcher": {
+      "mode": "subagent",
+      "description": "Researches technical context (library/API/best practice) and existing codebase patterns. Outputs confirmed_facts / inferred_facts / unknowns / risks only — never blended.",
+      "prompt": "{file:./prompts/researcher.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "bash": "deny",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "task": "deny"
+      }
+    },
+
+    "coder": {
+      "mode": "subagent",
+      "description": "Implements tasks assigned by Builder, following the PRD exactly. Tracks own progress via todowrite.",
+      "prompt": "{file:./prompts/coder.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "todowrite": "allow",
+        "bash": "allow",
+        "task": "deny"
+      }
+    },
+
+    "debugger": {
+      "mode": "subagent",
+      "temperature": 0.1,
+      "description": "Diagnoses defects via reproduce -> isolate -> source -> remedy, called by Reviewer. Cannot fix code directly.",
+      "prompt": "{file:./prompts/debugger.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "bash": {
+          "*": "deny",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "rg *": "allow",
+          "grep *": "allow",
+          "find *": "allow",
+          "cat *": "allow"
+        },
+        "task": "deny"
+      }
+    },
+
+    "verifier": {
+      "mode": "subagent",
+      "temperature": 0.1,
+      "description": "Boolean gate: compares two artifacts (PRD vs request, code vs DoD, PRD vs code) and reports PASS/FAIL with a gap list. Never proposes features or redesigns.",
+      "prompt": "{file:./prompts/verifier.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "bash": {
+          "*": "deny",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git show*": "allow",
+          "rg *": "allow",
+          "grep *": "allow"
+        },
+        "task": "deny"
+      }
+    },
+
+    "writer": {
+      "mode": "subagent",
+      "description": "Stateless formatter. Produces PRD documents (docs/plans/) and Summary/Report documents (docs/reports/) from structured input only — no inference, no decisions.",
+      "prompt": "{file:./prompts/writer.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "edit": {
+          "*": "deny",
+          "docs/plans/**": "allow",
+          "docs/reports/**": "allow"
+        },
+        "write": {
+          "*": "deny",
+          "docs/plans/**": "allow",
+          "docs/reports/**": "allow"
+        },
+        "bash": "deny",
+        "task": "deny"
+      }
+    }
+  }
+}

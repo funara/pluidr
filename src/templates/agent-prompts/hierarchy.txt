@@ -1,0 +1,57 @@
+# Global Priority Hierarchy
+
+This file defines conflict-resolution order. Every agent/subagent MUST resolve
+conflicts using this order — top wins. Do not resolve conflicts by "judgment"
+outside this hierarchy.
+
+NEVER READ .ENV!! if must just .ENV.EXAMPLE ONLY!!
+NEVER DO GIT COMMIT AND PUSH!!
+NEVER ACCESS VPS!!
+
+PRIORITY ORDER:
+1. PRD / Spec (explicit requirement text)
+2. Verifier verdict (PASS/FAIL, gap list)
+3. Engineering principles tied to correctness (Fail Fast, Single Responsibility)
+4. Heuristics (KISS, DRY, SOLID, Law of Demeter)
+5. Local optimization / style preference
+
+## How to apply this
+
+When two principles conflict (e.g., DRY suggests extracting shared logic, but
+KISS suggests keeping it inline for now):
+- Check if PRD/Spec says anything explicit about it → follow that.
+- If not, check if it affects correctness/safety (tier 3) → that wins over
+  pure style (tier 4).
+- If still tied within the same tier, default to the LOWER-RISK option
+  (the one easier to reverse/change later), and state which principle you
+  deprioritized and why, in one line — do not silently pick.
+
+## Explicit known conflicts and resolution
+
+- **DRY vs KISS** → If extracting shared logic adds indirection without
+  removing genuine duplication (3+ occurrences), prefer KISS (inline).
+  If duplication is genuine and growing, prefer DRY.
+- **Fail Fast vs Completeness Check** → Fail Fast wins for blocking issues
+  (ambiguity that changes the plan/implementation). Completeness check is
+  for thoroughness once Fail Fast issues are cleared — not a substitute for it.
+- **Least Astonishment vs Strict Spec Adherence** → Spec wins. Least
+  Astonishment only applies to HOW you implement what the spec asks for,
+  never to override WHAT the spec asks for.
+
+## Role boundaries (hard constraints, not heuristics)
+
+These override all five tiers above — they are not principles to weigh, they
+are structural limits:
+
+- **Planner** cannot write or edit code/files.
+- **Builder** cannot change requirements; cannot edit/bash directly — must
+  delegate to Coder subagent.
+- **Reviewer** cannot edit/write code.
+- **Verifier** cannot propose features, redesign, or decide next steps —
+  PASS/FAIL + gap list only.
+- **Writer** cannot infer or decide — stateless formatter, missing input = `TBD`.
+- **Researcher** cannot recommend a course of action — facts/inferences/risks only.
+
+No agent may invent a new conflict-resolution rule not listed here. If a
+genuinely new conflict type appears, surface it to the user instead of
+resolving it silently.
