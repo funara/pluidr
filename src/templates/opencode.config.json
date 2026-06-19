@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["prompts/hierarchy.txt"],
+  "instructions": ["{file:./prompts/hierarchy.txt}"],
   "permission": {
     "read": {
       "*.env": "deny",
@@ -14,7 +14,7 @@
 
     "planner": {
       "mode": "primary",
-      "description": "Turns a user request into a verified PRD via Researcher/Writer/Verifier, then decides build-or-revise. Cannot write or edit code.",
+      "description": "Turns a user request into a verified PRD via examiner/plan-writer/plan-checker, then decides build-or-revise. Cannot write or edit code.",
       "prompt": "{file:./prompts/planner.txt}",
       "permission": {
         "edit": "deny",
@@ -25,9 +25,9 @@
         "question": "allow",
         "task": {
           "*": "deny",
-          "researcher": "allow",
-          "writer": "allow",
-          "verifier": "allow"
+          "examiner": "allow",
+          "plan-writer": "allow",
+          "plan-checker": "allow"
         }
       }
     },
@@ -54,7 +54,7 @@
     "reviewer": {
       "mode": "primary",
       "temperature": 0.1,
-      "description": "Reviews completed work for traceability and regression risk via Verifier/Debugger/Researcher/Writer. Cannot edit or write code.",
+      "description": "Reviews completed work for traceability and regression risk via tracer/debugger/inspector/reporter. Cannot edit or write code.",
       "prompt": "{file:./prompts/reviewer.txt}",
       "permission": {
         "read": "allow",
@@ -72,28 +72,11 @@
         },
         "task": {
           "*": "deny",
-          "verifier": "allow",
+          "tracer": "allow",
           "debugger": "allow",
-          "researcher": "allow",
-          "writer": "allow"
+          "inspector": "allow",
+          "reporter": "allow"
         }
-      }
-    },
-
-    "researcher": {
-      "mode": "subagent",
-      "description": "Researches technical context (library/API/best practice) and existing codebase patterns. Outputs confirmed_facts / inferred_facts / unknowns / risks only — never blended.",
-      "prompt": "{file:./prompts/researcher.txt}",
-      "permission": {
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "edit": "deny",
-        "write": "deny",
-        "bash": "deny",
-        "webfetch": "allow",
-        "websearch": "allow",
-        "task": "deny"
       }
     },
 
@@ -153,10 +136,127 @@
       }
     },
 
+    "examiner": {
+      "mode": "subagent",
+      "description": "Researches technical and codebase context for Planner during PRD preparation. Outputs confirmed_facts / inferred_facts / unknowns / risks only.",
+      "prompt": "{file:./prompts/examiner.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "bash": "deny",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "task": "deny"
+      }
+    },
+
+    "plan-writer": {
+      "mode": "subagent",
+      "description": "Stateless formatter for Planner. Produces PRD documents from structured input — no inference, no decisions. PRD mode only.",
+      "prompt": "{file:./prompts/plan-writer.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "edit": {
+          "*": "deny",
+          "docs/plans/**": "allow"
+        },
+        "write": {
+          "*": "deny",
+          "docs/plans/**": "allow"
+        },
+        "bash": "deny",
+        "task": "deny"
+      }
+    },
+
+    "plan-checker": {
+      "mode": "subagent",
+      "temperature": 0.1,
+      "description": "Boolean gate for Planner: checks PRD completeness against original user request. PASS/FAIL + gap list only.",
+      "prompt": "{file:./prompts/plan-checker.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "bash": {
+          "*": "deny",
+          "rg *": "allow",
+          "grep *": "allow"
+        },
+        "task": "deny"
+      }
+    },
+
+    "tracer": {
+      "mode": "subagent",
+      "temperature": 0.1,
+      "description": "Boolean gate for Reviewer: traces PRD requirements to implemented code. PASS/FAIL + traceability table only.",
+      "prompt": "{file:./prompts/tracer.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "bash": {
+          "*": "deny",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git show*": "allow",
+          "rg *": "allow",
+          "grep *": "allow"
+        },
+        "task": "deny"
+      }
+    },
+
+    "inspector": {
+      "mode": "subagent",
+      "description": "Researches technical and codebase context for Reviewer during review/RCA. Outputs confirmed_facts / inferred_facts / unknowns / risks only.",
+      "prompt": "{file:./prompts/inspector.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "bash": "deny",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "task": "deny"
+      }
+    },
+
+    "reporter": {
+      "mode": "subagent",
+      "description": "Stateless formatter for Reviewer. Produces review/debug reports from structured input — no inference, no decisions. Summary mode only.",
+      "prompt": "{file:./prompts/reporter.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "edit": {
+          "*": "deny",
+          "docs/reports/**": "allow"
+        },
+        "write": {
+          "*": "deny",
+          "docs/reports/**": "allow"
+        },
+        "bash": "deny",
+        "task": "deny"
+      }
+    },
+
     "verifier": {
       "mode": "subagent",
       "temperature": 0.1,
-      "description": "Boolean gate: compares two artifacts (PRD vs request, code vs DoD, PRD vs code) and reports PASS/FAIL with a gap list. Never proposes features or redesigns.",
+      "description": "Boolean gate for Builder: compares implementation against PRD definition-of-done. PASS/FAIL + gap list only.",
       "prompt": "{file:./prompts/verifier.txt}",
       "permission": {
         "read": "allow",
@@ -178,19 +278,17 @@
 
     "writer": {
       "mode": "subagent",
-      "description": "Stateless formatter. Produces PRD documents (docs/plans/) and Summary/Report documents (docs/reports/) from structured input only — no inference, no decisions.",
+      "description": "Stateless formatter for Builder. Produces Summary/Report documents from structured input — no inference, no decisions. Summary mode only.",
       "prompt": "{file:./prompts/writer.txt}",
       "permission": {
         "read": "allow",
         "glob": "allow",
         "edit": {
           "*": "deny",
-          "docs/plans/**": "allow",
           "docs/reports/**": "allow"
         },
         "write": {
           "*": "deny",
-          "docs/plans/**": "allow",
           "docs/reports/**": "allow"
         },
         "bash": "deny",

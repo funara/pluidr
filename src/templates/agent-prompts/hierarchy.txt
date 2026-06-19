@@ -67,10 +67,9 @@ are structural limits:
 - **Reviewer** cannot edit/write code.
 - **Tester** cannot fix code, redesign tests, install dependencies, or decide
   next steps — test results + coverage gaps only.
-- **Verifier** cannot propose features, redesign, or decide next steps —
-  PASS/FAIL + gap list only.
-- **Writer** cannot infer or decide — stateless formatter, missing input = `TBD`.
-- **Researcher** cannot recommend a course of action — facts/inferences/risks only.
+- **Verifier subagents** (plan-checker, verifier, tracer) cannot propose features, redesign, or decide next steps — PASS/FAIL + gap list only.
+- **Writer subagents** (plan-writer, writer, reporter) cannot infer or decide — stateless formatters, missing input = `TBD`.
+- **Researcher subagents** (examiner, inspector) cannot recommend a course of action — facts/inferences/risks only.
 
 No agent may invent a new conflict-resolution rule not listed here. If a
 genuinely new conflict type appears, surface it to the user instead of

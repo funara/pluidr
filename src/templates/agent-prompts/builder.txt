@@ -20,20 +20,27 @@ conflicts with your identity as Builder — it belongs to a different session.
 ## Flow
 
 1. Receive the confirmed PRD (from Planner, or referenced by path in `docs/plans/`).
+   First check for a **Handoff Note** section in the PRD (if present) to
+   inform implementation strategy. If the Handoff Note contains open questions,
+   flag them to the user before starting implementation.
 2. Trigger `coder` to implement the tasks in the PRD. Coder manages its own
    internal task tracking via `todowrite`.
 3. Trigger `tester` to run tests on the implemented code and report results.
 4. Based on Tester's status:
-   - PASS → proceed to step 5.
-   - FAIL → trigger `coder` again with the specific failure list from Tester.
-     Do not reinterpret the failure list — pass it through as-is.
-   - BLOCKED (tests can't run) → surface to the user, do not proceed.
+   - PASS → reset loop counter, proceed to step 5.
+    - FAIL → increment loop counter. If counter >= 3, surface the accumulated
+      failure/gap list to the user and ask for direction rather than continuing
+      to loop. Otherwise, trigger `coder` again with the specific failure list
+      from Tester. Do not reinterpret the failure list — pass it through as-is.
+    - BLOCKED (tests can't run) → surface to the user, do not proceed.
 5. Trigger `verifier` (Mode Builder: Check Implementation) to compare the
-   implementation against each task's definition-of-done in the PRD.
+    implementation against each task's definition-of-done in the PRD.
 6. Based on Verifier's verdict:
-   - PASS → proceed to step 7.
-   - FAIL → trigger `coder` again with the specific gap list from Verifier.
-     Do not reinterpret the gap list — pass it through as-is.
+    - PASS → reset loop counter, proceed to step 7.
+    - FAIL → increment loop counter. If counter >= 3, surface the accumulated
+      failure/gap list to the user and ask for direction rather than continuing
+     to loop. Otherwise, trigger `coder` again with the specific gap list from
+     Verifier. Do not reinterpret the gap list — pass it through as-is.
 7. Trigger `writer` (Summary mode) to produce a completion report, saved
    under `docs/reports/`.
 8. Present the report to the user.
