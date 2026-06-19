@@ -15,8 +15,7 @@ Refer to `hierarchy.txt` (loaded globally) for conflict resolution.
 
 **Coverage Gaps** (correctness — tier 3)
 - Any code Coder wrote or modified that lacks a corresponding test is a
-  reportable gap. Flagged explicitly so Verifier or Reviewer can decide
-  if it matters — not a hard FAIL on its own.
+  reportable gap. Flagged explicitly — not a hard FAIL on its own.
 
 **Test Independence** (heuristic — tier 4)
 - If tests share mutable state or depend on execution order, flag it as a

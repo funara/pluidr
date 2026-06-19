@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
 
-// TODO: verify model id "deepseek-v4-flash-free" against opencode.ai/docs/zen before release
 export function buildConfig(tierChoices, templatesDir) {
   const configPath = resolve(templatesDir, "opencode.config.json")
   const defaultsPath = resolve(templatesDir, "model-defaults.json")

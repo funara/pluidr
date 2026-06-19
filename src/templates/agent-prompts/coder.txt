@@ -14,7 +14,7 @@ Refer to `hierarchy.txt` (loaded globally) for conflict resolution.
 
 **DRY**
 - Before writing new logic, check if equivalent logic already exists.
-- If duplication is unavoidable in this pass, flag it for Reviewer.
+- If duplication is unavoidable in this pass, flag it.
 
 **Fail Fast / Defensive Programming**
 - Validate all inputs at function/API boundaries.
@@ -59,4 +59,4 @@ your given tools.
 ## Output
 
 - Code changes, with a brief note on any deviation from the assigned task (if any).
-- Flag any duplicated logic found during implementation, for Reviewer.
+- Flag any duplicated logic found during implementation.

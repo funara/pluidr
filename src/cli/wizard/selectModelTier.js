@@ -1,5 +1,4 @@
-import { createInterface } from "node:readline/promises"
-import { stdin as input, stdout as output } from "node:process"
+import { select, text, isCancel } from "@clack/prompts"
 
 const TIER_LABELS = {
   reasoningHeavy: "Model for reasoning task",
@@ -7,29 +6,42 @@ const TIER_LABELS = {
 }
 
 export async function selectModelTier(modelDefaults) {
-  const rl = createInterface({ input, output })
   const choices = {}
 
-  try {
-    for (const [tierKey, tierInfo] of Object.entries(modelDefaults)) {
-      const defaultModel = `${tierInfo.provider}/${tierInfo.model}`
-      const label = TIER_LABELS[tierKey] ?? tierKey
+  for (const [tierKey, tierInfo] of Object.entries(modelDefaults)) {
+    const defaultModel = `${tierInfo.provider}/${tierInfo.model}`
+    const label = TIER_LABELS[tierKey] ?? tierKey
 
-      console.log(`\n${label}`)
-      console.log(`  1) Use default (${defaultModel})`)
-      console.log(`  2) Enter custom`)
+    let selectedModel = defaultModel
 
-      const answer = await rl.question("> ")
+    try {
+      const answer = await select({
+        message: label,
+        options: [
+          { value: defaultModel, label: `default (${defaultModel})` },
+          { value: "__custom__", label: "custom  (provider/model)" },
+        ],
+      })
 
-      if (answer.trim() === "2") {
-        const custom = await rl.question("  Model (format provider/model): ")
-        choices[tierKey] = custom.trim()
+      if (isCancel(answer)) {
+        selectedModel = defaultModel
+      } else if (answer === "__custom__") {
+        try {
+          const customModel = await text({
+            message: "Enter model:",
+          })
+          selectedModel = isCancel(customModel) ? defaultModel : (customModel || defaultModel)
+        } catch {
+          selectedModel = defaultModel
+        }
       } else {
-        choices[tierKey] = defaultModel
+        selectedModel = answer
       }
+    } catch {
+      selectedModel = defaultModel
     }
-  } finally {
-    rl.close()
+
+    choices[tierKey] = selectedModel
   }
 
   return choices

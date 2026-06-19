@@ -12,20 +12,48 @@
     "plan": { "hidden": true },
     "build": { "hidden": true },
 
-    "planner": {
+    "explorer": {
       "mode": "primary",
-      "description": "Turns a user request into a verified PRD via examiner/plan-writer/plan-checker, then decides build-or-revise. Cannot write or edit code.",
-      "prompt": "{file:./prompts/planner.txt}",
+      "temperature": 0.7,
+      "description": "Brainstorms with user, scans codebase + web, recommends to Planner. No subagents — research and recommendations only.",
+      "prompt": "{file:./prompts/explorer.txt}",
       "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
         "edit": "deny",
         "write": "deny",
-        "bash": "deny",
         "webfetch": "allow",
         "websearch": "allow",
         "question": "allow",
+        "bash": {
+          "*": "deny",
+          "git log*": "allow",
+          "git diff*": "allow",
+          "git show*": "allow",
+          "git status*": "allow",
+          "rg *": "allow",
+          "grep *": "allow"
+        },
+        "task": "deny"
+      }
+    },
+
+    "planner": {
+      "mode": "primary",
+      "description": "Turns a user request into a verified PRD via researcher/plan-writer/plan-checker, then decides build-or-revise. Cannot write or edit code.",
+      "prompt": "{file:./prompts/planner.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "bash": "deny",
+        "question": "allow",
         "task": {
           "*": "deny",
-          "examiner": "allow",
+          "researcher": "allow",
           "plan-writer": "allow",
           "plan-checker": "allow"
         }
@@ -34,9 +62,12 @@
 
     "builder": {
       "mode": "primary",
-      "description": "Executes a confirmed PRD by orchestrating Coder/Tester/Verifier/Writer. Cannot edit files, run bash, or change requirements directly.",
+      "description": "Executes a confirmed PRD by orchestrating coder/tester/reviewer/writer. Cannot edit files, run bash, or change requirements directly.",
       "prompt": "{file:./prompts/builder.txt}",
       "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
         "edit": "deny",
         "write": "deny",
         "bash": "deny",
@@ -45,36 +76,28 @@
           "*": "deny",
           "coder": "allow",
           "tester": "allow",
-          "verifier": "allow",
+          "reviewer": "allow",
           "writer": "allow"
         }
       }
     },
 
-    "reviewer": {
+    "debugger": {
       "mode": "primary",
-      "temperature": 0.1,
-      "description": "Reviews completed work for traceability and regression risk via tracer/debugger/inspector/reporter. Cannot edit or write code.",
-      "prompt": "{file:./prompts/reviewer.txt}",
+      "description": "Root-cause analysis via inspector/fixer/reporter. Standalone primary agent — does not depend on Builder. Cannot edit files or run bash directly.",
+      "prompt": "{file:./prompts/debugger.txt}",
       "permission": {
         "read": "allow",
         "glob": "allow",
         "grep": "allow",
         "edit": "deny",
         "write": "deny",
-        "bash": {
-          "*": "deny",
-          "git diff*": "allow",
-          "git log*": "allow",
-          "git show*": "allow",
-          "git blame*": "allow",
-          "rg *": "allow"
-        },
+        "bash": "deny",
+        "question": "allow",
         "task": {
           "*": "deny",
-          "tracer": "allow",
-          "debugger": "allow",
           "inspector": "allow",
+          "fixer": "allow",
           "reporter": "allow"
         }
       }
@@ -96,30 +119,6 @@
       }
     },
 
-    "debugger": {
-      "mode": "subagent",
-      "temperature": 0.1,
-      "description": "Diagnoses defects via reproduce -> isolate -> source -> remedy, called by Reviewer. Cannot fix code directly.",
-      "prompt": "{file:./prompts/debugger.txt}",
-      "permission": {
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "edit": "deny",
-        "write": "deny",
-        "bash": {
-          "*": "deny",
-          "git diff*": "allow",
-          "git log*": "allow",
-          "rg *": "allow",
-          "grep *": "allow",
-          "find *": "allow",
-          "cat *": "allow"
-        },
-        "task": "deny"
-      }
-    },
-
     "tester": {
       "mode": "subagent",
       "description": "Runs tests on implemented code and reports results (PASS/FAIL/BLOCKED) with coverage gaps. Cannot fix code, redesign tests, or decide next steps.",
@@ -136,10 +135,49 @@
       }
     },
 
-    "examiner": {
+    "reviewer": {
+      "mode": "subagent",
+      "temperature": 0.1,
+      "description": "Boolean gate for Builder: compares implementation against PRD definition-of-done. PASS/FAIL + gap list only.",
+      "prompt": "{file:./prompts/reviewer.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "bash": {
+          "*": "deny",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git show*": "allow",
+          "rg *": "allow",
+          "grep *": "allow"
+        },
+        "task": "deny"
+      }
+    },
+
+    "writer": {
+      "mode": "subagent",
+      "description": "Text-file executor for Builder. Writes and edits .md/.txt files across the project — like coder but for documents only. No bash.",
+      "prompt": "{file:./prompts/writer.txt}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": "deny",
+        "todowrite": "deny",
+        "task": "deny"
+      }
+    },
+
+    "researcher": {
       "mode": "subagent",
       "description": "Researches technical and codebase context for Planner during PRD preparation. Outputs confirmed_facts / inferred_facts / unknowns / risks only.",
-      "prompt": "{file:./prompts/examiner.txt}",
+      "prompt": "{file:./prompts/researcher.txt}",
       "permission": {
         "read": "allow",
         "glob": "allow",
@@ -160,6 +198,7 @@
       "permission": {
         "read": "allow",
         "glob": "allow",
+        "grep": "allow",
         "edit": {
           "*": "deny",
           "docs/plans/**": "allow"
@@ -193,32 +232,9 @@
       }
     },
 
-    "tracer": {
-      "mode": "subagent",
-      "temperature": 0.1,
-      "description": "Boolean gate for Reviewer: traces PRD requirements to implemented code. PASS/FAIL + traceability table only.",
-      "prompt": "{file:./prompts/tracer.txt}",
-      "permission": {
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "edit": "deny",
-        "write": "deny",
-        "bash": {
-          "*": "deny",
-          "git diff*": "allow",
-          "git log*": "allow",
-          "git show*": "allow",
-          "rg *": "allow",
-          "grep *": "allow"
-        },
-        "task": "deny"
-      }
-    },
-
     "inspector": {
       "mode": "subagent",
-      "description": "Researches technical and codebase context for Reviewer during review/RCA. Outputs confirmed_facts / inferred_facts / unknowns / risks only.",
+      "description": "Root-cause analysis for Debugger. Investigates bugs via codebase and web research. Outputs confirmed_facts / inferred_facts / unknowns / risks only.",
       "prompt": "{file:./prompts/inspector.txt}",
       "permission": {
         "read": "allow",
@@ -226,63 +242,47 @@
         "grep": "allow",
         "edit": "deny",
         "write": "deny",
-        "bash": "deny",
+        "bash": {
+          "*": "deny",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git show*": "allow",
+          "git blame*": "allow",
+          "rg *": "allow",
+          "grep *": "allow",
+          "cat *": "allow",
+          "find *": "allow"
+        },
         "webfetch": "allow",
         "websearch": "allow",
         "task": "deny"
       }
     },
 
-    "reporter": {
+    "fixer": {
       "mode": "subagent",
-      "description": "Stateless formatter for Reviewer. Produces review/debug reports from structured input — no inference, no decisions. Summary mode only.",
-      "prompt": "{file:./prompts/reporter.txt}",
-      "permission": {
-        "read": "allow",
-        "glob": "allow",
-        "edit": {
-          "*": "deny",
-          "docs/reports/**": "allow"
-        },
-        "write": {
-          "*": "deny",
-          "docs/reports/**": "allow"
-        },
-        "bash": "deny",
-        "task": "deny"
-      }
-    },
-
-    "verifier": {
-      "mode": "subagent",
-      "temperature": 0.1,
-      "description": "Boolean gate for Builder: compares implementation against PRD definition-of-done. PASS/FAIL + gap list only.",
-      "prompt": "{file:./prompts/verifier.txt}",
+      "description": "Implements bug fixes for Debugger. Follows root cause from inspector. Like coder but focused on fixes — minimal change, root-cause targeting.",
+      "prompt": "{file:./prompts/fixer.txt}",
       "permission": {
         "read": "allow",
         "glob": "allow",
         "grep": "allow",
-        "edit": "deny",
-        "write": "deny",
-        "bash": {
-          "*": "deny",
-          "git diff*": "allow",
-          "git log*": "allow",
-          "git show*": "allow",
-          "rg *": "allow",
-          "grep *": "allow"
-        },
+        "edit": "allow",
+        "write": "allow",
+        "todowrite": "allow",
+        "bash": "allow",
         "task": "deny"
       }
     },
 
-    "writer": {
+    "reporter": {
       "mode": "subagent",
-      "description": "Stateless formatter for Builder. Produces Summary/Report documents from structured input — no inference, no decisions. Summary mode only.",
-      "prompt": "{file:./prompts/writer.txt}",
+      "description": "Stateless formatter for Debugger. Produces diagnosis + remedy reports from structured input — no inference, no decisions. Summary mode only.",
+      "prompt": "{file:./prompts/reporter.txt}",
       "permission": {
         "read": "allow",
         "glob": "allow",
+        "grep": "allow",
         "edit": {
           "*": "deny",
           "docs/reports/**": "allow"
