@@ -2,11 +2,11 @@
   "reasoningHeavy": {
     "provider": "opencode",
     "model": "big-pickle",
-    "agents": ["planner", "debugger", "explorer", "researcher", "plan-writer", "plan-checker", "inspector", "reporter"]
+    "agents": ["planner", "debugger", "explorer", "researcher", "plan-checker", "inspector", "builder"]
   },
   "fast": {
     "provider": "opencode",
     "model": "deepseek-v4-flash-free",
-    "agents": ["builder", "coder", "tester", "reviewer", "writer", "fixer"]
+    "agents": ["coder", "tester", "reviewer", "writer", "fixer", "plan-writer", "reporter"]
   }
 }

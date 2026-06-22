@@ -14,7 +14,7 @@ Pluidr sets up a **14-agent** pipeline in OpenCode organized under **4 primary a
 
 **1. Explorer tab** (optional, research-only) — Brainstorms with you, scans the codebase and web for context, then produces actionable recommendations. No subagents, no file editing. Handoff to Planner when you're ready to formalize.
 
-**2. Planner tab** — Turns your request into a verified PRD. It researches technical facts via Researcher, writes the spec via Plan-Writer, and validates it for completeness via Plan-Checker before asking you to confirm. Planner never edits files directly.
+**2. Planner tab** — Turns your request into a verified PRD. It researches technical facts via Researcher, writes the spec via Plan-Writer, and validates it for completeness via Plan-Checker. On FAIL, Planner surfaces gap remedies to you via the question tool (you pick the fix direction) — Planner never silently re-routes. After your input, Planner internally delegates to Researcher or Plan-Writer. Max 3 loops, then surfaces to you for direction. Planner never edits files directly.
 
 **3. Builder tab** — Executes a confirmed PRD. It delegates implementation to Coder, tests via Tester, checks traceability with Reviewer, and produces a completion report via Writer. Builder never edits files or runs bash directly.
 
@@ -69,7 +69,8 @@ Each subagent belongs to exactly one primary agent and cannot be invoked by anyo
 | **Researcher agents** | Researcher and Inspector output confirmed_facts/inferred_facts/unknowns/risks — no recommendations |
 | **Writer agents** | Plan-Writer, Writer, and Reporter are stateless formatters — missing input = TBD, never invent content |
 | **Build gate order** | Coder → Tester → Reviewer → Writer (Builder orchestrates in sequence) |
-| **Loop limit** | 3 consecutive FAILs from Tester or Reviewer → Builder surfaces to you |
+| **Planner FAIL loop** | Plan-checker FAIL → Planner surfaces gap remedies to you via question tool (MC options) → you pick → Planner internally routes to Researcher or Plan-Writer. Max 3 loops, then surfaces to you for direction |
+| **Builder FAIL loop** | 3 consecutive FAILs from Tester or Reviewer → Builder surfaces to you |
 | **No shared subagents** | Each subagent belongs to exactly one primary — no cross-primary delegation |
 | **Debugger independence** | Debugger is standalone — does not flow through Builder, triggered directly by you |
 
@@ -114,3 +115,22 @@ Prompts you to select models for two agent tiers, then:
 - Backs up any existing config at `~/.config/opencode/opencode.jsonc` to `opencode.jsonc.bak`
 - Writes the new config to `~/.config/opencode/opencode.jsonc`
 - Copies agent system-prompt files into `~/.config/opencode/prompts/`
+- Copies the bundled `parent-session` plugin into `~/.config/opencode/plugins/`
+- Writes a `package.json` into `~/.config/opencode/` declaring `@opencode-ai/plugin` as a dependency (OpenCode installs it automatically on first launch via its bundled Bun runtime)
+
+On completion, prints:
+```
+Pluidr setup complete!
+You can update your agent model settings later in opencode.jsonc
+```
+The filename `opencode.jsonc` (second line) is a clickable terminal hyperlink — Ctrl+click to open the config in your default editor.
+
+## Bundled plugins
+
+Pluidr ships with one plugin: [`parent-session`](src/plugins/README.md), which gives subagents three tools for cross-session context access:
+
+- `parent_session_messages` — read the parent session's transcript
+- `session_messages(sessionId)` — read any session by ID
+- `session_messages_batch(sessionIds)` — read multiple sessions in one call
+
+`pluidr init` installs the plugin and its dependency declaration automatically — no extra user action. On OpenCode's first launch, the bundled Bun runtime installs `@opencode-ai/plugin` from the generated `package.json`, then the plugin's tools become available to all subagents.

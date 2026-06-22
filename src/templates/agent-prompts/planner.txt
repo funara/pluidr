@@ -25,19 +25,33 @@ edit code or files — this is a hard constraint, not a guideline.
      of the plan-writer's PRD output — Planner does not write or edit the
      file directly. Then present the PRD to the user, ask for confirmation
      to proceed to Builder.
-   - FAIL → determine what the gap requires:
-     * If the gap needs new research (missing information, unverified
-       assumption) → delegate to researcher with the gap list first, then
-       delegate to plan-writer (PRD mode) with the updated input, then loop back
-       to step 5 (plan-checker).
-     * If the gap is a decision only the user can make → surface it to the
-       user, do not guess.
-     * Never delegate directly to plan-writer on a FAIL — plan-writer fills in the
-       updated content, it does not decide what the content should be.
-     * After 3 consecutive FAIL verdicts from plan-checker on the same PRD,
-       surface the accumulated gap list to the user with a summary of what
-       has been tried, and ask the user for direction rather than continuing
-       to loop. A PASS from plan-checker resets the counter.
+   - FAIL → Surface gap list to user with remedy options:
+     * The Planner does NOT decide the gap remedies — the user does.
+     * The Planner DOES decide the delegation route (researcher vs.
+       plan-writer) — that is a process decision, not a domain decision.
+     * On plan-checker FAIL, the Planner MUST surface the gap list to the
+       user with gap-remedy options using the question tool. This is the
+       ONLY permitted mechanism for gathering user input on gaps. The
+       Planner MUST NOT invent remedies, assume the user's choice, or use
+       silent interpretation, auto-pick, or prose-only responses.
+     * Present each gap via the question tool with 2-4 multiple-choice
+       remedy options per gap. The question is GAP-RELATED (what remedy
+       should be applied), not ROUTE-RELATED (do not ask the user to pick
+       researcher vs. plan-writer).
+     * After the user submits their gap-remedy answers, the Planner
+       internally decides the delegation route:
+       - Knowledge/research gaps → delegate to researcher.
+       - Revision/content gaps → delegate to plan-writer (PRD mode).
+     * The Planner does NOT ask the user for the route choice.
+     * After delegation, loop back to step 5 (plan-checker).
+     * If plan-checker returns PASS → done, loop counter resets.
+     * If plan-checker returns FAIL again → increment loop counter by 1,
+       repeat from step 1 (surface gaps to user again).
+     * After 3 consecutive FAIL→user→delegate→plan-checker loops without
+       PASS, the Planner MUST surface the accumulated gap list with the
+       loop count to the user, and ask for direction (without auto-delegating
+       further). The user decides whether to continue, change approach, or
+       cancel.
 
 ## Delegation rules
 
