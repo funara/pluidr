@@ -12,11 +12,11 @@
     "plan": { "hidden": true },
     "build": { "hidden": true },
 
-    "explorer": {
+    "composer": {
       "mode": "primary",
       "temperature": 0.7,
-      "description": "Brainstorms with user, scans codebase + web, recommends to Planner. No subagents — research and recommendations only.",
-      "prompt": "{file:./prompts/explorer.txt}",
+      "description": "Full engineering workflow: Explore, Plan, Build — 3 phases, 7 subagents. Starts in Explore mode, transitions via guardrail gates.",
+      "prompt": "{file:./prompts/composer.txt}",
       "permission": {
         "read": "allow",
         "glob": "allow",
@@ -35,45 +35,11 @@
           "rg *": "allow",
           "grep *": "allow"
         },
-        "task": "deny"
-      }
-    },
-
-    "planner": {
-      "mode": "primary",
-      "description": "Turns a user request into a verified PRD via researcher/plan-writer/plan-checker, then decides build-or-revise. Cannot write or edit code.",
-      "prompt": "{file:./prompts/planner.txt}",
-      "permission": {
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "edit": "deny",
-        "write": "deny",
-        "bash": "deny",
-        "question": "allow",
         "task": {
           "*": "deny",
           "researcher": "allow",
           "plan-writer": "allow",
-          "plan-checker": "allow"
-        }
-      }
-    },
-
-    "builder": {
-      "mode": "primary",
-      "description": "Executes a confirmed PRD by orchestrating coder/tester/reviewer/writer. Cannot edit files, run bash, or change requirements directly.",
-      "prompt": "{file:./prompts/builder.txt}",
-      "permission": {
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "edit": "deny",
-        "write": "deny",
-        "bash": "deny",
-        "question": "allow",
-        "task": {
-          "*": "deny",
+          "plan-checker": "allow",
           "coder": "allow",
           "tester": "allow",
           "reviewer": "allow",

@@ -4,39 +4,42 @@
 [![npm downloads](https://img.shields.io/npm/dm/pluidr)](https://www.npmjs.com/package/pluidr)
 [![License](https://img.shields.io/npm/l/pluidr)](https://github.com/funara/pluidr/blob/main/LICENSE)
 
-**Plan · Build · Review · Debug** — opinionated engineering workflow installer for [OpenCode](https://opencode.ai).
+**Explore · Plan · Build · Debug** — opinionated engineering workflow installer for [OpenCode](https://opencode.ai).
 
 ## How it works
 
-Pluidr sets up a **14-agent** pipeline in OpenCode organized under **4 primary agents**, each with a dedicated tab and exclusive subagents. Every agent has a strict role, scoped permissions, and no shared subagents.
+Pluidr sets up a **12-agent** pipeline in OpenCode organized under **2 primary agents**: **Composer** (orchestrating 7 subagents across 3 phases) and **Debugger** (standalone, 3 subagents). Every agent has a strict role, scoped permissions, and no shared subagents.
 
 ### Primary Agents
 
-**1. Explorer tab** (optional, research-only) — Brainstorms with you, scans the codebase and web for context, then produces actionable recommendations. No subagents, no file editing. Handoff to Planner when you're ready to formalize.
+**1. Composer tab** — The single entry point for all feature work. Composer runs 3 strict, sequential phases:
 
-**2. Planner tab** — Turns your request into a verified PRD. It researches technical facts via Researcher, writes the spec via Plan-Writer, and validates it for completeness via Plan-Checker. On FAIL, Planner surfaces gap remedies to you via the question tool (you pick the fix direction) — Planner never silently re-routes. After your input, Planner internally delegates to Researcher or Plan-Writer. Max 3 loops, then surfaces to you for direction. Planner never edits files directly.
+- **EXPLORE phase** (mandatory start) — Brainstorms with you, scans the codebase and web for context. Can delegate deep fact-finding to Researcher. Produces actionable recommendations with certainty marking. Uses a **guardrail gate**: must ask you "Ready to write the PRD?" before proceeding to Plan.
 
-**3. Builder tab** — Executes a confirmed PRD. It delegates implementation to Coder, tests via Tester, checks traceability with Reviewer, and produces a completion report via Writer. Builder never edits files or runs bash directly.
+- **PLAN phase** — Turns findings into a verified PRD via Plan-Writer → Plan-Checker. Plan-Writer writes the PRD to `docs/plans/`. Plan-Checker validates against your original request (PASS/FAIL + gap list only). On FAIL, surfaces gap remedies to you via the question tool (max 3 loops). On PASS, uses a **guardrail gate**: must ask you "Build from this PRD?" before proceeding to Build.
 
-**4. Debugger tab** (standalone, user-triggered at any time) — Root-cause analysis using the **Brooks-Lint methodology** (Iron Law + 6 Decay Risks). Delegates investigation to Inspector, fixes to Fixer, and reports to Reporter. Does not depend on Builder — triggered directly by you.
+- **BUILD phase** — Executes the confirmed PRD via Coder → Tester → Reviewer → Writer in strict sequence. Coder implements, Tester validates (PASS/FAIL/BLOCKED), Reviewer gates against the PRD definition-of-done, Writer produces a completion report to `docs/reports/`. Coder→Coder loops without verification are forbidden. Max 3 consecutive FAILs before surfacing to you.
+
+Composer never edits files or runs bash directly — all work is delegated to subagents.
+
+**2. Debugger tab** (standalone, user-triggered at any time) — Root-cause analysis using the **Brooks-Lint methodology** (Iron Law + 6 Decay Risks). Delegates investigation to Inspector, fixes to Fixer, and reports to Reporter. Does not depend on Composer — triggered directly by you.
 
 ### Exclusive Subagents
 
 Each subagent belongs to exactly one primary agent and cannot be invoked by anyone else:
 
-| Primary | Subagents | Role |
-|---------|-----------|------|
-| Explorer | *(none)* | Research + recommendations only |
-| Planner | Researcher | Technical/codebase fact-finding (confirmed_facts/inferred_facts/unknowns/risks) |
-| Planner | Plan-Writer | Stateless PRD formatter — missing input = TBD |
-| Planner | Plan-Checker | **Gate** — validates PRD against original request, PASS/FAIL + gap list only |
-| Builder | Coder | Writes and edits implementation code |
-| Builder | Tester | Runs tests, reports PASS/FAIL/BLOCKED + coverage gaps |
-| Builder | Reviewer | **Gate** — compares implementation against definition-of-done, PASS/FAIL + gap list only |
-| Builder | Writer | Stateless document formatter — completion reports |
-| Debugger | Inspector | Brooks-Lint RCA (Iron Law + 6 decay risks + 4 review modes) |
-| Debugger | Fixer | Applies minimal, root-cause-targeted fixes |
-| Debugger | Reporter | Stateless diagnosis report formatter (Iron Law structure) |
+| Primary | Phase | Subagents | Role |
+|---------|-------|-----------|------|
+| Composer | EXPLORE | Researcher | Technical/codebase fact-finding (confirmed_facts/inferred_facts/unknowns/risks) |
+| Composer | PLAN | Plan-Writer | Stateless PRD formatter — writes to `docs/plans/`, missing input = TBD |
+| Composer | PLAN | Plan-Checker | **Gate** — validates PRD against original request, PASS/FAIL + gap list only |
+| Composer | BUILD | Coder | Writes and edits implementation code |
+| Composer | BUILD | Tester | Runs tests, reports PASS/FAIL/BLOCKED + coverage gaps |
+| Composer | BUILD | Reviewer | **Gate** — compares implementation against definition-of-done, PASS/FAIL + gap list only |
+| Composer | BUILD | Writer | Stateless document formatter — writes completion reports to `docs/reports/` |
+| Debugger | — | Inspector | Brooks-Lint RCA (Iron Law + 6 decay risks + 4 review modes) |
+| Debugger | — | Fixer | Applies minimal, root-cause-targeted fixes |
+| Debugger | — | Reporter | Stateless diagnosis report formatter (Iron Law structure) |
 
 ### Workflow
 
@@ -44,15 +47,35 @@ Each subagent belongs to exactly one primary agent and cannot be invoked by anyo
   You describe a feature / idea
          │
          ▼
-  (Optional) Explorer → research + recommendations → User decides
+  Composer — always starts in EXPLORE phase
          │
-         ▼
-  Planner → (if needed) Researcher → Plan-Writer writes PRD →
-    Plan-Checker validates → you confirm → handoff to Builder
-         │
-         ▼
-  Builder → Coder implements → Tester runs tests →
-    Reviewer checks DoD → Writer produces completion report
+  ┌───────┤
+  │       ▼
+  │  [Optional] Researcher → deep fact-finding
+  │       ▼
+  │  Synthesize findings → Internally assess complexity
+  │    ├── Simple → GUARDRAIL GATE 1a (question tool):
+  │    │   "Ready to build directly?"
+  │    │   ├── "Yes" → BUILD phase
+  │    │   ├── "Write a PRD first" → PLAN phase
+  │    │   └── "More research" → continue exploring
+  │    └── Complex → GUARDRAIL GATE 1b (question tool):
+  │        "Ready to write the PRD?"
+  │        ├── "Yes" → PLAN phase
+  │        └── "More research" → continue exploring
+  │       │                              │
+  │       ▼ (PLAN)                       ▼ (direct BUILD)
+  │  Plan-Writer → docs/plans/      Coder → Tester →
+  │  Plan-Checker validates         Reviewer → Writer → docs/reports/
+  │       │
+  │       ▼ (FAIL, max 3 loops)
+  │  Surface gaps → you pick remedy
+  │       │
+  │       ▼ (PASS)
+  │  GUARDRAIL GATE 2 (question tool):
+  │    "Build from this PRD?"
+  │    └── "Yes" → BUILD phase
+  │         Coder → Tester → Reviewer → Writer → docs/reports/
          │
          ▼
   You review the result
@@ -65,14 +88,20 @@ Each subagent belongs to exactly one primary agent and cannot be invoked by anyo
 
 | Rule | Detail |
 |------|--------|
+| **Mandatory EXPLORE start** | Composer always starts in EXPLORE phase — no skipping to Plan or Build without passing a guardrail gate |
+| **Complexity assessment** | Composer internally evaluates if the feature is simple (few files, low risk, clear approach) — this is LLM judgment, not user choice |
+| **Guardrail Gate 1** | Simple → question tool: "Ready to build directly?" Complex → question tool: "Ready to write the PRD?" Both paths require user confirmation |
+| **Guardrail Gate 2** | PLAN→BUILD: question tool asks "Build from this PRD?" with explicit confirmation |
+| **Direct build path** | Simple features can skip PLAN phase — Composer determines simplicity, user just confirms |
 | **Gate agents** | Plan-Checker and Reviewer output PASS/FAIL + gap list only — no improvement suggestions, no decisions |
 | **Researcher agents** | Researcher and Inspector output confirmed_facts/inferred_facts/unknowns/risks — no recommendations |
 | **Writer agents** | Plan-Writer, Writer, and Reporter are stateless formatters — missing input = TBD, never invent content |
-| **Build gate order** | Coder → Tester → Reviewer → Writer (Builder orchestrates in sequence) |
-| **Planner FAIL loop** | Plan-checker FAIL → Planner surfaces gap remedies to you via question tool (MC options) → you pick → Planner internally routes to Researcher or Plan-Writer. Max 3 loops, then surfaces to you for direction |
-| **Builder FAIL loop** | 3 consecutive FAILs from Tester or Reviewer → Builder surfaces to you |
-| **No shared subagents** | Each subagent belongs to exactly one primary — no cross-primary delegation |
-| **Debugger independence** | Debugger is standalone — does not flow through Builder, triggered directly by you |
+| **Phase-scoped delegation** | EXPLORE: researcher only. PLAN: plan-writer, plan-checker only. BUILD: coder, tester, reviewer, writer only |
+| **Build gate order** | Coder → Tester → Reviewer → Writer — no skipping, no Coder→Coder without verification |
+| **Planner FAIL loop** | Plan-checker FAIL → Composer surfaces gap remedies to you via question tool (MC options) → you pick → Composer routes to Plan-Writer. Max 3 loops, then surfaces to you for direction |
+| **Builder FAIL loop** | 3 consecutive FAILs from Tester or Reviewer → Composer surfaces to you |
+| **Output directories** | Plan-Writer writes to `docs/plans/`. Writer writes to `docs/reports/`. Enforced by permissions |
+| **Debugger independence** | Debugger is standalone — does not flow through Composer, triggered directly by you |
 
 ### Brooks-Lint Methodology (Debugger)
 

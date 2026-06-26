@@ -31,7 +31,7 @@ and pick up where the parent left off.
 ## Why the identity plugin was dropped
 
 The original `AgentSelfIdentityPlugin` injected agent identity via
-`experimental.chat.*` hooks. Pluidr's 14 agent names are known at install
+`experimental.chat.*` hooks. Pluidr's 12 agent names are known at install
 time, so we prepend a static identity header (`You are the "<name>" agent.`)
 to every generated prompt file. This is KISS: no hook evaluation per
 request, no dependency on undocumented experimental APIs, single source

@@ -2,7 +2,7 @@
   "reasoningHeavy": {
     "provider": "opencode",
     "model": "big-pickle",
-    "agents": ["planner", "debugger", "explorer", "researcher", "plan-checker", "inspector", "builder"]
+    "agents": ["composer", "debugger", "researcher", "plan-checker", "inspector"]
   },
   "fast": {
     "provider": "opencode",
