@@ -7,42 +7,27 @@ const TIER_LABELS = {
 
 export async function selectModelTier(modelDefaults) {
   const choices = {}
-
   for (const [tierKey, tierInfo] of Object.entries(modelDefaults)) {
     const defaultModel = `${tierInfo.provider}/${tierInfo.model}`
     const label = TIER_LABELS[tierKey] ?? tierKey
 
-    let selectedModel = defaultModel
+    const answer = await select({
+      message: label,
+      options: [
+        { value: defaultModel, label: `default (${defaultModel})` },
+        { value: "__custom__", label: "custom  (provider/model)" },
+      ],
+    }).catch(() => defaultModel)
 
-    try {
-      const answer = await select({
-        message: label,
-        options: [
-          { value: defaultModel, label: `default (${defaultModel})` },
-          { value: "__custom__", label: "custom  (provider/model)" },
-        ],
-      })
-
-      if (isCancel(answer)) {
-        selectedModel = defaultModel
-      } else if (answer === "__custom__") {
-        try {
-          const customModel = await text({
-            message: "Enter model:",
-          })
-          selectedModel = isCancel(customModel) ? defaultModel : (customModel || defaultModel)
-        } catch {
-          selectedModel = defaultModel
-        }
-      } else {
-        selectedModel = answer
-      }
-    } catch {
-      selectedModel = defaultModel
+    if (isCancel(answer)) {
+      choices[tierKey] = defaultModel
+    } else if (answer === "__custom__") {
+      const customModel = await text({ message: "Enter model:" })
+        .catch(() => defaultModel)
+      choices[tierKey] = isCancel(customModel) ? defaultModel : (customModel || defaultModel)
+    } else {
+      choices[tierKey] = answer
     }
-
-    choices[tierKey] = selectedModel
   }
-
   return choices
 }

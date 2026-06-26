@@ -144,7 +144,7 @@ Prompts you to select models for two agent tiers, then:
 - Backs up any existing config at `~/.config/opencode/opencode.jsonc` to `opencode.jsonc.bak`
 - Writes the new config to `~/.config/opencode/opencode.jsonc`
 - Copies agent system-prompt files into `~/.config/opencode/prompts/`
-- Copies the bundled `parent-session` plugin into `~/.config/opencode/plugins/`
+- Copies the bundled `pluidr-flow` and `pluidr-squeeze` plugins into `~/.config/opencode/plugins/`
 - Writes a `package.json` into `~/.config/opencode/` declaring `@opencode-ai/plugin` as a dependency (OpenCode installs it automatically on first launch via its bundled Bun runtime)
 
 On completion, prints:
@@ -156,10 +156,14 @@ The filename `opencode.jsonc` (second line) is a clickable terminal hyperlink �
 
 ## Bundled plugins
 
-Pluidr ships with one plugin: [`parent-session`](src/plugins/README.md), which gives subagents three tools for cross-session context access:
+Pluidr ships with two plugins:
+
+**`pluidr-flow`** — provides subagents with three tools for cross-session context access:
 
 - `parent_session_messages` — read the parent session's transcript
 - `session_messages(sessionId)` — read any session by ID
 - `session_messages_batch(sessionIds)` — read multiple sessions in one call
 
-`pluidr init` installs the plugin and its dependency declaration automatically — no extra user action. On OpenCode's first launch, the bundled Bun runtime installs `@opencode-ai/plugin` from the generated `package.json`, then the plugin's tools become available to all subagents.
+**`pluidr-squeeze`** — hooks into tool execution to rewrite bash commands through the `rtk` binary, filtering verbose output and saving 60-90% of tokens across all agents.
+
+`pluidr init` installs both plugins and their dependency declaration automatically — no extra user action. `pluidr-squeeze` also downloads the `rtk` engine binary to `~/.config/opencode/bin/`. On OpenCode's first launch, the bundled Bun runtime installs `@opencode-ai/plugin` from the generated `package.json`, then both plugins become available to all agents.

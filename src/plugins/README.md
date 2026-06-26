@@ -2,13 +2,13 @@
 
 This folder holds plugin source files that `pluidr init` copies into the
 user's OpenCode plugin directory (`~/.config/opencode/plugins/`), giving
-subagents cross-session context tools out of the box.
+subagents cross-session context tools and command output filtering out of
+the box.
 
-## What is `parent-session.js`?
+## `pluidr-flow.js` — cross-session context
 
-It is the implementation of the `ParentSessionPlugin`, registered by
-OpenCode at startup. It exposes three tools that subagents use to read
-the conversation history of related sessions (parent, sibling, or batch):
+Implementation of the `SessionFlowPlugin`. Exposes three tools for reading
+conversation history across related sessions (parent, sibling, or batch):
 
 - `parent_session_messages` — read the parent session's full transcript
 - `session_messages(sessionId)` — read any session by ID
@@ -18,7 +18,21 @@ The output is a structured text dump with numbered messages, agent
 attribution, and one-line tool-invocation summaries, separated by
 `\n\n---\n\n`.
 
-## Why `parent-session` was extracted
+## `pluidr-squeeze.ts` — command output filtering
+
+Implementation of the `PluidrSqueezePlugin`. Hooks into `tool.execute.before`
+to rewrite bash commands through the `rtk` binary. The binary filters,
+groups, truncates, and deduplicates command output — saving 60-90% of
+tokens across all agents.
+
+The plugin is a thin delegator: all rewrite logic lives in the `rtk` binary.
+It checks `PATH` first, then falls back to Pluidr's managed location at
+`~/.config/opencode/bin/rtk`. If the binary is not found, the plugin
+gracefully disables itself with a warning.
+
+`pluidr init` downloads the `rtk` binary automatically during setup.
+
+## Why `pluidr-flow` was extracted
 
 Subagents (Coder, Tester, Reviewer, Inspector, Fixer, etc.) run in fresh
 child sessions with no access to the parent orchestrator's conversation
@@ -43,12 +57,12 @@ The original `AgentAttributionToolPlugin` was designed for a Retrospective
 agent that captures post-session observations. Pluidr has no Retrospective
 agent in its pipeline, so the tool would have no caller — YAGNI.
 
-## How it is loaded
+## How they are loaded
 
-`pluidr init` copies `parent-session.js` into
-`~/.config/opencode/plugins/` and writes a `package.json` next to it
-declaring `@opencode-ai/plugin: ^1.17.9` as a dependency. On OpenCode's
-first launch, the bundled Bun runtime detects the `package.json` and runs
-`bun install` automatically — no user action required. Once installed,
-the plugin's three tools are available to every agent that has the
-appropriate permissions.
+`pluidr init` copies both plugins into `~/.config/opencode/plugins/` and
+writes a `package.json` declaring `@opencode-ai/plugin: ^1.17.9` as a
+dependency. For `pluidr-squeeze`, it also downloads the `rtk` engine binary
+to `~/.config/opencode/bin/`. On OpenCode's first launch, the bundled Bun
+runtime detects the `package.json` and runs `bun install` automatically —
+no user action required. Once installed, both plugins are available to
+every agent that has the appropriate permissions.

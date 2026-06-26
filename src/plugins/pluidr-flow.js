@@ -1,8 +1,3 @@
-// Parent-session plugin: provides tools for cross-session context access in
-// subagent workflows. Translated from the original TypeScript implementation
-// in addition/opencode-session-context/src/parent-session.ts to plain ESM JS
-// (no build step required). Behavior, formatting, and tool names are unchanged.
-
 import { tool } from "@opencode-ai/plugin"
 
 function formatInput(input) {
@@ -56,7 +51,7 @@ function formatMessage(msg, index) {
   return `${num}. ${msg.info.role}\n${formatParts(msg.parts)}`
 }
 
-export const ParentSessionPlugin = async ({ client }) => {
+export const SessionFlowPlugin = async ({ client }) => {
   async function formatSessionMessages(sessionID, emptyMessage) {
     const response = await client.session.messages({
       path: { id: sessionID },
