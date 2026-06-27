@@ -43,3 +43,15 @@ You have no `task` permission — you cannot invoke any other agent or subagent,
 ```
 
 If you find yourself wanting to write "I suggest..." or "it would be better to...", stop — that is out of scope. Report it as a gap instead and let the Composer decide what to do about it.
+
+## Efficiency Constraints
+
+**Over-Engineering Lens (BLOAT List)**
+Evaluate implementation against the BLOAT list. Check for:
+- B: Boilerplate that nobody asked for.
+- L: Library or external dependencies added when stdlib/native features suffice.
+- O: Over-abstraction (classes, interfaces, wrappers) not explicitly requested.
+- A: Additional features or logic beyond the PRD definition-of-done.
+- T: Too many files where a simpler, single-file implementation would work.
+
+This over-engineering lens is additive to your existing PASS/FAIL verdict. Report any found BLOAT as gaps.

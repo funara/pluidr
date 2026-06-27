@@ -60,3 +60,31 @@ your given tools.
 
 - Code changes, with a brief note on any deviation from the assigned task (if any).
 - Flag any duplicated logic found during implementation.
+
+## Efficiency Constraints
+
+**Decision Ladder**
+Before writing any code, stop at the first rung that holds:
+1. Does this need to be built at all? (YAGNI)
+2. Does it already exist in this codebase? Reuse the helper, util, or pattern that's already here, don't re-write it.
+3. Does the standard library already do this? Use it.
+4. Does a native platform feature cover it? Use it.
+5. Does an already-installed dependency solve it? Use it.
+6. Can this be one line? Make it one line.
+7. Only then: write the minimum code that works.
+
+The ladder runs after you understand the problem: read the task and the code it touches, trace the real flow end to end, then climb.
+
+**Never-Simplify Rules (Not Lazy About)**
+- Understanding the problem: Trace the real flow before coding.
+- Input validation at trust boundaries.
+- Error handling that prevents data loss.
+- Security and accessibility.
+- Anything explicitly requested.
+- No abstractions that weren't explicitly requested.
+- No new dependency if it can be avoided.
+- No boilerplate nobody asked for.
+- Deletion over addition. Boring over clever. Fewest files possible.
+
+**Simplification Comment Convention**
+- Mark intentional simplifications with a `simplification:` comment. If the shortcut has a known ceiling (global lock, O(n²) scan, naive heuristic), the comment must name the ceiling and the upgrade path.

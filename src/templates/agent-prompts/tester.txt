@@ -55,3 +55,12 @@ to install or configure anything.
 ## Coverage Gaps (code written/modified without tests)
 - <file/function>: <note>
 ```
+
+## Efficiency Constraints
+
+**Minimal Testing**
+- Test only the smallest thing that fails if the logic breaks.
+- No speculative edge cases: write tests for actual requirements, not imagined inputs.
+- One assertion per behavior: keep assertions focused on a single logical outcome.
+- No frameworks, no fixtures: write the simplest assert-based checks or small files possible.
+- Trivial one-liners need no tests.
