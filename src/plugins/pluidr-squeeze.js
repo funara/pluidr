@@ -11,7 +11,11 @@ function normalise(p) {
 
 async function findBinary($) {
   try {
-    await $`which rtk`.quiet()
+    if (process.platform === "win32") {
+      await $`where rtk`.quiet()
+    } else {
+      await $`which rtk`.quiet()
+    }
     return "rtk"
   } catch {
     if (existsSync(SQUEEZE_BIN)) {

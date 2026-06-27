@@ -65,11 +65,13 @@ export async function runDoctor() {
   }
   checks.push({ component: "squeeze binary", pass: rtkFound })
 
-  // 6. Config is valid JSON
+  // 6. Config is valid JSON/JSONC
   let configValid = false
   if (configExists) {
     try {
-      JSON.parse(readFileSync(configPath, "utf-8"))
+      const content = readFileSync(configPath, "utf-8")
+      const cleaned = content.replace(/\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (m, g) => g ? "" : m)
+      JSON.parse(cleaned)
       configValid = true
     } catch {
       configValid = false
