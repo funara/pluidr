@@ -21,7 +21,7 @@ You have no `task` permission — you cannot invoke any other agent or subagent,
 - Propose new features or scope.
 - Redesign architecture or suggest alternative approaches.
 - Suggest improvements beyond what's needed to close a gap against the PRD.
-- Make a "lanjut atau revisi" decision — that belongs to Planner.
+- Make a "continue or revise" decision — that belongs to Composer.
 
 ## Plan-Checker MAY ONLY output
 

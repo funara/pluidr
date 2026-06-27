@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { resolve, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
+import { confirm, isCancel } from "@clack/prompts"
 import { selectModelTier } from "../wizard/selectModelTier.js"
 import { backupExistingConfig } from "../../core/backup.js"
 import { buildConfig } from "../../core/configBuilder.js"
@@ -19,6 +20,13 @@ export async function runInit() {
 
   const tierChoices = await selectModelTier(modelDefaults)
 
+  const squeezeAnswer = await confirm({
+    message: "Install pluidr-squeeze plugin? Reduces bash output tokens by 60-90%.",
+    initialValue: true,
+  })
+
+  const installSqueezePlugin = isCancel(squeezeAnswer) ? true : squeezeAnswer
+
   backupExistingConfig()
 
   const configObject = buildConfig(tierChoices, TEMPLATES_DIR)
@@ -26,7 +34,9 @@ export async function runInit() {
   writeAgentPrompts(TEMPLATES_DIR)
   writePluginBundle()
   writePluginPackageJson()
-  await installSqueeze()
+  if (installSqueezePlugin) {
+    await installSqueeze()
+  }
 
   const path = getConfigPath().replace(/\\/g, "/").replace(/^\//, "")
   console.log(`Pluidr setup complete!\nYou can update your agent model settings later in \x1b]8;;file:///${path}\x1b\\opencode.jsonc\x1b]8;;\x1b\\`)

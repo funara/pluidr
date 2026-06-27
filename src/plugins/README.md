@@ -18,7 +18,7 @@ The output is a structured text dump with numbered messages, agent
 attribution, and one-line tool-invocation summaries, separated by
 `\n\n---\n\n`.
 
-## `pluidr-squeeze.ts` — command output filtering
+## `pluidr-squeeze.js` — command output filtering
 
 Implementation of the `PluidrSqueezePlugin`. Hooks into `tool.execute.before`
 to rewrite bash commands through the `rtk` binary. The binary filters,

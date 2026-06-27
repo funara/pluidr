@@ -8,9 +8,9 @@ import IDENTITY_HEADER from "./identityHeader.js"
 // copied verbatim — no agent-identity header.
 const REFERENCE_FILES = new Set(["hierarchy"])
 
-export function writeAgentPrompts(templatesDir) {
+export function writeAgentPrompts(templatesDir, destDir) {
   const sourceDir = resolve(templatesDir, "agent-prompts")
-  const destDir = getPromptsDir()
+  if (!destDir) destDir = getPromptsDir()
 
   mkdirSync(destDir, { recursive: true })
 

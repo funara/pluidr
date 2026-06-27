@@ -16,6 +16,9 @@
   ],
   "license": "MIT",
   "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
   "bin": {
     "pluidr": "bin/pluidr.js"
   },

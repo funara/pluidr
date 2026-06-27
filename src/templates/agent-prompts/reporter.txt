@@ -44,10 +44,6 @@ You have no `task` permission — you cannot invoke any other agent or subagent.
 
 ## Output Format (Brooks-Lint Diagnosis Report)
 
-NOTE: This format replaces the old Summary/Report Outcome/Details format
-specifically for debugger diagnosis reports. The old format is retained for
-Builder's writer summary reports.
-
 ```markdown
 # Diagnosis Report: <subject>
 

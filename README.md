@@ -14,7 +14,7 @@ Pluidr sets up a **12-agent** pipeline in OpenCode organized under **2 primary a
 
 **1. Composer tab** — The single entry point for all feature work. Composer runs 3 strict, sequential phases:
 
-- **EXPLORE phase** (mandatory start) — Brainstorms with you, scans the codebase and web for context. Can delegate deep fact-finding to Researcher. Produces actionable recommendations with certainty marking. Uses a **guardrail gate**: must ask you "Ready to write the PRD?" before proceeding to Plan.
+- **EXPLORE phase** (mandatory start) — Brainstorms with you, then delegates ALL research to the Researcher subagent — Composer itself has no read/glob/grep/webfetch/websearch/bash permissions. Produces actionable recommendations with certainty marking. Uses a **guardrail gate**: must ask you "Ready to write the PRD?" before proceeding to Plan.
 
 - **PLAN phase** — Turns findings into a verified PRD via Plan-Writer → Plan-Checker. Plan-Writer writes the PRD to `docs/plans/`. Plan-Checker validates against your original request (PASS/FAIL + gap list only). On FAIL, surfaces gap remedies to you via the question tool (max 3 loops). On PASS, uses a **guardrail gate**: must ask you "Build from this PRD?" before proceeding to Build.
 
@@ -22,7 +22,12 @@ Pluidr sets up a **12-agent** pipeline in OpenCode organized under **2 primary a
 
 Composer never edits files or runs bash directly — all work is delegated to subagents.
 
+After presenting the completion report, Composer resets to EXPLORE phase and asks what you'd like to do next: start a new feature, switch to Debugger for bugs, or iterate on the current result.
+
 **2. Debugger tab** (standalone, user-triggered at any time) — Root-cause analysis using the **Brooks-Lint methodology** (Iron Law + 6 Decay Risks). Delegates investigation to Inspector, fixes to Fixer, and reports to Reporter. Does not depend on Composer — triggered directly by you.
+Debugger never reads files, edits code, or runs bash directly — all investigation, fixes, and reports are delegated to subagents.
+
+After presenting the investigation outcome, Debugger resets and asks what you'd like to do next: investigate a new bug, switch to Composer for feature work, or re-investigate with new information.
 
 ### Exclusive Subagents
 
@@ -37,18 +42,18 @@ Each subagent belongs to exactly one primary agent and cannot be invoked by anyo
 | Composer | BUILD | Tester | Runs tests, reports PASS/FAIL/BLOCKED + coverage gaps |
 | Composer | BUILD | Reviewer | **Gate** — compares implementation against definition-of-done, PASS/FAIL + gap list only |
 | Composer | BUILD | Writer | Stateless document formatter — writes completion reports to `docs/reports/` |
-| Debugger | — | Inspector | Brooks-Lint RCA (Iron Law + 6 decay risks + 4 review modes) |
-| Debugger | — | Fixer | Applies minimal, root-cause-targeted fixes |
-| Debugger | — | Reporter | Stateless diagnosis report formatter (Iron Law structure) |
+| Debugger | DEBUG | Inspector | Brooks-Lint RCA (Iron Law + 6 decay risks + 4 review modes) |
+| Debugger | DEBUG | Fixer | Applies minimal, root-cause-targeted fixes |
+| Debugger | DEBUG | Reporter | Stateless diagnosis report formatter (Iron Law structure) |
 
 ### Workflow
 
 ```
   You describe a feature / idea
-         │
-         ▼
+          │
+          ▼
   Composer — always starts in EXPLORE phase
-         │
+          │
   ┌───────┤
   │       ▼
   │  [Optional] Researcher → deep fact-finding
@@ -80,8 +85,7 @@ Each subagent belongs to exactly one primary agent and cannot be invoked by anyo
          ▼
   You review the result
          │
-  (If bug found at any point → Debugger → Inspector → Fixer →
-   Reporter → you verify)
+  (If bug found at any point → Debugger → Inspector → Fixer → Reporter → you verify)
 ```
 
 ### Flow Rules
@@ -98,8 +102,8 @@ Each subagent belongs to exactly one primary agent and cannot be invoked by anyo
 | **Writer agents** | Plan-Writer, Writer, and Reporter are stateless formatters — missing input = TBD, never invent content |
 | **Phase-scoped delegation** | EXPLORE: researcher only. PLAN: plan-writer, plan-checker only. BUILD: coder, tester, reviewer, writer only |
 | **Build gate order** | Coder → Tester → Reviewer → Writer — no skipping, no Coder→Coder without verification |
-| **Planner FAIL loop** | Plan-checker FAIL → Composer surfaces gap remedies to you via question tool (MC options) → you pick → Composer routes to Plan-Writer. Max 3 loops, then surfaces to you for direction |
-| **Builder FAIL loop** | 3 consecutive FAILs from Tester or Reviewer → Composer surfaces to you |
+| **Plan-Checker FAIL loop** | Plan-checker FAIL → Composer surfaces gap remedies to you via question tool (MC options) → you pick → Composer routes to Plan-Writer. Max 3 loops, then surfaces to you for direction |
+| **Build FAIL loop** | 3 consecutive FAILs from Tester or Reviewer → Composer surfaces to you |
 | **Output directories** | Plan-Writer writes to `docs/plans/`. Writer writes to `docs/reports/`. Enforced by permissions |
 | **Debugger independence** | Debugger is standalone — does not flow through Composer, triggered directly by you |
 
@@ -136,23 +140,52 @@ npx pluidr init
 
 ## Usage
 
-### `pluidr init`
+### pluidr init
 
 Prompts you to select models for two agent tiers, then:
 
-- Builds a complete `opencode.jsonc` config with the chosen models injected into the right agents
-- Backs up any existing config at `~/.config/opencode/opencode.jsonc` to `opencode.jsonc.bak`
-- Writes the new config to `~/.config/opencode/opencode.jsonc`
-- Copies agent system-prompt files into `~/.config/opencode/prompts/`
-- Copies the bundled `pluidr-flow` and `pluidr-squeeze` plugins into `~/.config/opencode/plugins/`
-- Writes a `package.json` into `~/.config/opencode/` declaring `@opencode-ai/plugin` as a dependency (OpenCode installs it automatically on first launch via its bundled Bun runtime)
+- Asks whether to install the pluidr-squeeze plugin (can decline squeeze download)
+- Builds a complete opencode.jsonc config with the chosen models injected into the right agents
+- Backs up any existing config at ~/.config/opencode/opencode.jsonc to opencode.jsonc.bak
+- Writes the new config to ~/.config/opencode/opencode.jsonc
+- Copies agent system-prompt files into ~/.config/opencode/prompts/
+- Copies the bundled pluidr-flow and pluidr-squeeze plugins into ~/.config/opencode/plugins/
+- Writes a package.json into ~/.config/opencode/ declaring @opencode-ai/plugin as a dependency (OpenCode installs it automatically on first launch via its bundled Bun runtime)
 
 On completion, prints:
-```
+`
 Pluidr setup complete!
 You can update your agent model settings later in opencode.jsonc
-```
-The filename `opencode.jsonc` (second line) is a clickable terminal hyperlink — Ctrl+click to open the config in your default editor.
+`
+The filename opencode.jsonc (second line) is a clickable terminal hyperlink — Ctrl+click to open the config in your default editor.
+
+### pluidr uninstall
+
+Removes Pluidr artifacts and restores your previous configuration:
+
+- Finds the latest timestamped backup (opencode.jsonc.bak.*) in ~/.config/opencode/
+- Restores it to opencode.jsonc
+- Removes prompts/, plugins/, and bin/ directories
+- Does NOT remove opencode.jsonc itself (preserves user customizations)
+- Does NOT remove package.json (may be used by other plugins)
+- Prints a summary of what was removed and restored
+
+### pluidr update
+
+Re-runs the setup wizard (same as pluidr init). Before writing, warns if existing config is found and asks for confirmation.
+
+### pluidr doctor
+
+Checks installation health and reports PASS/FAIL for each component:
+
+- opencode.jsonc exists
+- All 13 prompt files exist
+- Both plugin files exist
+- package.json with @opencode-ai/plugin dependency
+- squeeze binary is available
+- Config is valid JSON
+
+Prints a summary table with ✓/✗ status. Exits with code 0 if all pass, 1 if any fail.
 
 ## Bundled plugins
 
@@ -164,6 +197,6 @@ Pluidr ships with two plugins:
 - `session_messages(sessionId)` — read any session by ID
 - `session_messages_batch(sessionIds)` — read multiple sessions in one call
 
-**`pluidr-squeeze`** — hooks into tool execution to rewrite bash commands through the `rtk` binary, filtering verbose output and saving 60-90% of tokens across all agents.
+**`pluidr-squeeze`** — hooks into tool execution to rewrite bash commands through the `squeeze` binary, filtering verbose output and saving 60-90% of tokens across all agents.
 
-`pluidr init` installs both plugins and their dependency declaration automatically — no extra user action. `pluidr-squeeze` also downloads the `rtk` engine binary to `~/.config/opencode/bin/`. On OpenCode's first launch, the bundled Bun runtime installs `@opencode-ai/plugin` from the generated `package.json`, then both plugins become available to all agents.
+`pluidr init` installs both plugins and their dependency declaration automatically — no extra user action. `pluidr-squeeze` also downloads the engine to `~/.config/opencode/bin/`. On OpenCode's first launch, the bundled Bun runtime installs `@opencode-ai/plugin` from the generated `package.json`, then both plugins become available to all agents.

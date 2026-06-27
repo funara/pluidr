@@ -1,7 +1,10 @@
 import { mkdirSync, writeFileSync } from "node:fs"
-import { getConfigDir, getConfigPath } from "./paths.js"
+import { join } from "node:path"
+import { getConfigDir } from "./paths.js"
 
-export function writeConfig(configObject) {
-  mkdirSync(getConfigDir(), { recursive: true })
-  writeFileSync(getConfigPath(), JSON.stringify(configObject, null, 2), "utf-8")
+export function writeConfig(configObject, targetDir) {
+  const baseDir = targetDir || getConfigDir()
+  const configPath = join(baseDir, "opencode.jsonc")
+  mkdirSync(baseDir, { recursive: true })
+  writeFileSync(configPath, JSON.stringify(configObject, null, 2), "utf-8")
 }

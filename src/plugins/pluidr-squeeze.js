@@ -1,25 +1,27 @@
+import { existsSync } from "node:fs"
 import { homedir } from "node:os"
 import { join } from "node:path"
-import type { Plugin } from "@opencode-ai/plugin"
 
 const BIN_NAME = process.platform === "win32" ? "rtk.exe" : "rtk"
 const SQUEEZE_BIN = join(homedir(), ".config", "opencode", "bin", BIN_NAME)
 
-async function findBinary($: any): Promise<string | null> {
+function normalise(p) {
+  return p.replace(/\\/g, "/")
+}
+
+async function findBinary($) {
   try {
     await $`which rtk`.quiet()
     return "rtk"
   } catch {
-    try {
-      await $`test -f ${SQUEEZE_BIN}`.quiet()
-      return SQUEEZE_BIN
-    } catch {
-      return null
+    if (existsSync(SQUEEZE_BIN)) {
+      return normalise(SQUEEZE_BIN)
     }
+    return null
   }
 }
 
-export const PluidrSqueezePlugin: Plugin = async ({ $ }) => {
+export const PluidrSqueezePlugin = async ({ $ }) => {
   const binPath = await findBinary($)
   if (!binPath) {
     console.warn("[squeeze] rtk binary not found — plugin disabled")
@@ -33,14 +35,14 @@ export const PluidrSqueezePlugin: Plugin = async ({ $ }) => {
       const args = output?.args
       if (!args || typeof args !== "object") return
 
-      const command = (args as Record<string, unknown>).command
+      const command = args.command
       if (typeof command !== "string" || !command) return
 
       try {
         const result = await $`${binPath} rewrite ${command}`.quiet().nothrow()
         const rewritten = String(result.stdout).trim()
         if (rewritten && rewritten !== command) {
-          ;(args as Record<string, unknown>).command = rewritten
+          args.command = rewritten
         }
       } catch {
         // rewrite failed — pass through unchanged

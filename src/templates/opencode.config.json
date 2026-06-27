@@ -18,23 +18,16 @@
       "description": "Full engineering workflow: Explore, Plan, Build — 3 phases, 7 subagents. Starts in Explore mode, transitions via guardrail gates.",
       "prompt": "{file:./prompts/composer.txt}",
       "permission": {
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
+        "read": "deny",
+        "glob": "deny",
+        "grep": "deny",
         "edit": "deny",
         "write": "deny",
-        "webfetch": "allow",
-        "websearch": "allow",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "bash": "deny",
         "question": "allow",
-        "bash": {
-          "*": "deny",
-          "git log*": "allow",
-          "git diff*": "allow",
-          "git show*": "allow",
-          "git status*": "allow",
-          "rg *": "allow",
-          "grep *": "allow"
-        },
+        "todowrite": "allow",
         "task": {
           "*": "deny",
           "researcher": "allow",
@@ -50,16 +43,19 @@
 
     "debugger": {
       "mode": "primary",
-      "description": "Root-cause analysis via inspector/fixer/reporter. Standalone primary agent — does not depend on Builder. Cannot edit files or run bash directly.",
+      "description": "Root-cause analysis via inspector/fixer/reporter. Standalone primary agent — does not depend on Composer. Pure orchestrator — all investigation, fixes, and reports delegated to subagents.",
       "prompt": "{file:./prompts/debugger.txt}",
       "permission": {
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
+        "read": "deny",
+        "glob": "deny",
+        "grep": "deny",
         "edit": "deny",
         "write": "deny",
+        "webfetch": "deny",
+        "websearch": "deny",
         "bash": "deny",
         "question": "allow",
+        "todowrite": "allow",
         "task": {
           "*": "deny",
           "inspector": "allow",
@@ -71,16 +67,48 @@
 
     "coder": {
       "mode": "subagent",
-      "description": "Implements tasks assigned by Builder, following the PRD exactly. Tracks own progress via todowrite.",
+      "description": "Implements tasks assigned by Composer, following the PRD exactly. Tracks own progress via todowrite.",
       "prompt": "{file:./prompts/coder.txt}",
       "permission": {
         "read": "allow",
         "glob": "allow",
         "grep": "allow",
-        "edit": "allow",
-        "write": "allow",
+        "edit": {
+          "*": "deny",
+          "src/**": "allow",
+          "*.{json,md,txt}": "allow",
+          "package.json": "allow"
+        },
+        "write": {
+          "*": "deny",
+          "src/**": "allow",
+          "*.{json,md,txt}": "allow"
+        },
         "todowrite": "allow",
-        "bash": "allow",
+        "bash": {
+          "*": "deny",
+          "npm *": "allow",
+          "npx *": "allow",
+          "node *": "allow",
+          "git *": "allow",
+          "mkdir *": "allow",
+          "cp *": "allow",
+          "rm *": "allow",
+          "mv *": "allow",
+          "cat *": "allow",
+          "ls *": "allow",
+          "pwd": "allow",
+          "echo *": "allow",
+          "rg *": "allow",
+          "grep *": "allow",
+          "find *": "allow",
+          "which *": "allow",
+          "where *": "allow",
+          "dir *": "allow",
+          "type *": "allow",
+          "node --test": "allow",
+          "cd *": "allow"
+        },
         "task": "deny"
       }
     },
@@ -104,7 +132,7 @@
     "reviewer": {
       "mode": "subagent",
       "temperature": 0.1,
-      "description": "Boolean gate for Builder: compares implementation against PRD definition-of-done. PASS/FAIL + gap list only.",
+      "description": "Boolean gate for Composer: compares implementation against PRD definition-of-done. PASS/FAIL + gap list only.",
       "prompt": "{file:./prompts/reviewer.txt}",
       "permission": {
         "read": "allow",
@@ -126,7 +154,7 @@
 
     "writer": {
       "mode": "subagent",
-      "description": "Text-file executor for Builder. Writes and edits .md/.txt files across the project — like coder but for documents only. No bash.",
+      "description": "Text-file executor for Composer. Writes and edits .md/.txt files across the project — like coder but for documents only. No bash.",
       "prompt": "{file:./prompts/writer.txt}",
       "permission": {
         "read": "allow",
@@ -142,7 +170,7 @@
 
     "researcher": {
       "mode": "subagent",
-      "description": "Researches technical and codebase context for Planner during PRD preparation. Outputs confirmed_facts / inferred_facts / unknowns / risks only.",
+      "description": "Researches technical and codebase context for Composer during EXPLORE phase. Outputs confirmed_facts / inferred_facts / unknowns / risks only.",
       "prompt": "{file:./prompts/researcher.txt}",
       "permission": {
         "read": "allow",
@@ -159,7 +187,7 @@
 
     "plan-writer": {
       "mode": "subagent",
-      "description": "Stateless formatter for Planner. Produces PRD documents from structured input — no inference, no decisions. PRD mode only.",
+      "description": "Stateless formatter for Composer. Produces PRD documents from structured input — no inference, no decisions. PRD mode only.",
       "prompt": "{file:./prompts/plan-writer.txt}",
       "permission": {
         "read": "allow",
@@ -181,7 +209,7 @@
     "plan-checker": {
       "mode": "subagent",
       "temperature": 0.1,
-      "description": "Boolean gate for Planner: checks PRD completeness against original user request. PASS/FAIL + gap list only.",
+      "description": "Boolean gate for Composer: checks PRD completeness against original user request. PASS/FAIL + gap list only.",
       "prompt": "{file:./prompts/plan-checker.txt}",
       "permission": {
         "read": "allow",
@@ -233,10 +261,42 @@
         "read": "allow",
         "glob": "allow",
         "grep": "allow",
-        "edit": "allow",
-        "write": "allow",
+        "edit": {
+          "*": "deny",
+          "src/**": "allow",
+          "*.{json,md,txt}": "allow",
+          "package.json": "allow"
+        },
+        "write": {
+          "*": "deny",
+          "src/**": "allow",
+          "*.{json,md,txt}": "allow"
+        },
         "todowrite": "allow",
-        "bash": "allow",
+        "bash": {
+          "*": "deny",
+          "npm *": "allow",
+          "npx *": "allow",
+          "node *": "allow",
+          "git *": "allow",
+          "mkdir *": "allow",
+          "cp *": "allow",
+          "rm *": "allow",
+          "mv *": "allow",
+          "cat *": "allow",
+          "ls *": "allow",
+          "pwd": "allow",
+          "echo *": "allow",
+          "rg *": "allow",
+          "grep *": "allow",
+          "find *": "allow",
+          "which *": "allow",
+          "where *": "allow",
+          "dir *": "allow",
+          "type *": "allow",
+          "node --test": "allow",
+          "cd *": "allow"
+        },
         "task": "deny"
       }
     },

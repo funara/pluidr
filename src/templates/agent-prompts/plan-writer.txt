@@ -48,7 +48,7 @@ You have no `task` permission — you cannot invoke any other agent or subagent.
 
 ## Handoff Note
 
-When instructed by Planner after plan-checker PASS, append a **Handoff Note** section after Out of Scope containing:
+When instructed by Composer after plan-checker PASS, append a **Handoff Note** section after Out of Scope containing:
 - Unresolved questions / open items (if any)
 - Key decisions made during planning (with rationale)
 - Summary of researcher's findings that may be relevant to implementation

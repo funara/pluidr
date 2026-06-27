@@ -4,13 +4,15 @@ import { fileURLToPath } from "node:url"
 import { getConfigDir } from "./paths.js"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const PLUGINS = ["pluidr-flow.js", "pluidr-squeeze.ts"]
+const PLUGINS = ["pluidr-flow.js", "pluidr-squeeze.js"]
 const PACKAGE_JSON = {
+  type: "module",
   dependencies: { "@opencode-ai/plugin": "^1.17.9" },
 }
 
-export function writePluginBundle() {
-  const pluginsDir = join(getConfigDir(), "plugins")
+export function writePluginBundle(targetDir) {
+  const baseDir = targetDir || getConfigDir()
+  const pluginsDir = join(baseDir, "plugins")
   mkdirSync(pluginsDir, { recursive: true })
 
   for (const name of PLUGINS) {
@@ -19,9 +21,9 @@ export function writePluginBundle() {
   }
 }
 
-export function writePluginPackageJson() {
-  const packageJsonPath = join(getConfigDir(), "package.json")
-  if (existsSync(packageJsonPath)) return
+export function writePluginPackageJson(targetDir) {
+  const baseDir = targetDir || getConfigDir()
+  const packageJsonPath = join(baseDir, "package.json")
 
   writeFileSync(packageJsonPath, JSON.stringify(PACKAGE_JSON, null, 2), "utf-8")
 }
