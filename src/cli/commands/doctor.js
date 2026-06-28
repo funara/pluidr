@@ -6,7 +6,7 @@ import { getConfigDir, getConfigPath, getPromptsDir } from "../../core/paths.js"
 import { findRtkPath } from "../../core/squeezeInstaller.js"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const EXPECTED_PROMPT_COUNT = 13
+const EXPECTED_PROMPT_COUNT = 18
 const PLUGIN_FILES = ["pluidr-flow.js", "pluidr-squeeze.js"]
 
 export async function runDoctor() {
@@ -23,7 +23,7 @@ export async function runDoctor() {
   const configExists = existsSync(configPath)
   checks.push({ component: "opencode.jsonc", pass: configExists })
 
-  // 2. All 13 prompt files exist
+  // 2. All 18 prompt files exist
   let promptCount = 0
   if (existsSync(promptsDir)) {
     try {
@@ -33,7 +33,7 @@ export async function runDoctor() {
       promptCount = 0
     }
   }
-  checks.push({ component: "13 prompt files", pass: promptCount === EXPECTED_PROMPT_COUNT, detail: `${promptCount}/${EXPECTED_PROMPT_COUNT}` })
+  checks.push({ component: "18 prompt files", pass: promptCount === EXPECTED_PROMPT_COUNT, detail: `${promptCount}/${EXPECTED_PROMPT_COUNT}` })
 
   // 3. Both plugin files exist
   let pluginsFound = 0

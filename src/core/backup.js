@@ -5,9 +5,9 @@ import { getConfigPath } from "./paths.js"
 const MAX_BACKUPS = 5
 
 function timestamp() {
-  const d = new Date()
-  const pad = (n) => String(n).padStart(2, "0")
-  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`
+  // ponytail: simplified formatting using native Date serialization
+  const s = new Date().toISOString().replace(/[-:]/g, "")
+  return `${s.slice(0, 8)}_${s.slice(9, 15)}`
 }
 
 function rotateBackups(configPath) {

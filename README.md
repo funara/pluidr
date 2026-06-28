@@ -4,127 +4,288 @@
 [![npm downloads](https://img.shields.io/npm/dm/pluidr)](https://www.npmjs.com/package/pluidr)
 [![License](https://img.shields.io/npm/l/pluidr)](https://github.com/funara/pluidr/blob/main/LICENSE)
 
-**Explore · Plan · Build · Debug** — opinionated engineering workflow installer for [OpenCode](https://opencode.ai).
+** Plan · Build · Review ** — opinionated engineering workflow installer for [OpenCode](https://opencode.ai).
 
-## How it works
+---
 
-Pluidr sets up a **12-agent** pipeline in OpenCode organized under **2 primary agents**: **Composer** (orchestrating 7 subagents across 3 phases) and **Debugger** (standalone, 3 subagents). Every agent has a strict role, scoped permissions, and no shared subagents.
+## What is Pluidr?
 
-### Primary Agents
+Pluidr installs a **17-agent pipeline** into OpenCode — structured around **3 primary agents**, each with their own exclusive subagents, scoped permissions, and enforced workflow rules. No shared subagents. No ad-hoc delegation.
 
-**1. Composer tab** — The single entry point for all feature work. Composer runs 3 strict, sequential phases:
+| Primary Agent | Purpose | Subagents |
+|---|---|---|
+| **Composer** | Feature work — Explore → Plan → Build | Researcher, Plan-Writer, Plan-Checker, Coder, Tester, Reviewer, Compose-Reporter |
+| **Debugger** | Bug investigation — Investigate → Fix → Report | Inspector, Fixer, Debug-Reporter |
+| **Prober** | Security audit — Trace → Patch → Audit | Tracer, Patcher, Auditor, Probe-Reporter |
 
-- **EXPLORE phase** (mandatory start) — Brainstorms with you, then delegates ALL research to the Researcher subagent — Composer itself has no read/glob/grep/webfetch/websearch/bash permissions. Produces actionable recommendations with certainty marking. Uses a **guardrail gate**: must ask you "Ready to write the PRD?" before proceeding to Plan.
+---
 
-- **PLAN phase** — Turns findings into a verified PRD via Plan-Writer → Plan-Checker. Plan-Writer writes the PRD to `docs/plans/`. Plan-Checker validates against your original request (PASS/FAIL + gap list only). On FAIL, surfaces gap remedies to you via the question tool (max 3 loops). On PASS, uses a **guardrail gate**: must ask you "Build from this PRD?" before proceeding to Build.
+## Agent Workflows
 
-- **BUILD phase** — Executes the confirmed PRD via Coder → Tester → Reviewer → Writer in strict sequence. Coder implements, Tester validates (PASS/FAIL/BLOCKED), Reviewer gates against the PRD definition-of-done, Writer produces a completion report to `docs/reports/`. Coder→Coder loops without verification are forbidden. Max 3 consecutive FAILs before surfacing to you.
+### 🎼 Composer — Feature Work
 
-Composer never edits files or runs bash directly — all work is delegated to subagents.
+Composer is the **single entry point for all feature work**. It runs 3 strict, one-directional phases. Phase direction is one-way — no going back without explicit user instruction.
 
-After presenting the completion report, Composer resets to EXPLORE phase and asks what you'd like to do next: start a new feature, switch to Debugger for bugs, or iterate on the current result.
+```
+You describe a feature / idea
+        │
+        ▼
+  ┌─────────────────────────────────────────┐
+  │  EXPLORE PHASE  (mandatory start)       │
+  │                                         │
+  │  Delegate: Researcher                   │
+  │  → deep codebase + web fact-finding     │
+  │  → confirmed_facts / inferred_facts /   │
+  │    unknowns / risks                     │
+  │                                         │
+  │  Composer internally assesses:          │
+  │  Is this feature simple or complex?     │
+  └──────────┬──────────────────────────────┘
+             │
+    ┌────────┴────────┐
+    │ Simple feature  │  Complex feature
+    ▼                 ▼
+GUARDRAIL GATE 1a  GUARDRAIL GATE 1b
+"Build directly?"  "Write a PRD?"
+    │                 │
+    │ Yes             │ Yes
+    │                 ▼
+    │          ┌──────────────────────────────┐
+    │          │  PLAN PHASE                  │
+    │          │                              │
+    │          │  Plan-Writer → docs/plans/   │
+    │          │  Plan-Checker validates PRD  │
+    │          │  PASS/FAIL + gap list only   │
+    │          │                              │
+    │          │  FAIL → surface gaps to you  │
+    │          │  (max 5 loops)               │
+    │          │                              │
+    │          │  PASS → GUARDRAIL GATE 2     │
+    │          │  "Build from this PRD?"      │
+    │          └──────────┬───────────────────┘
+    │                     │ Yes
+    └──────────┬──────────┘
+               ▼
+  ┌────────────────────────────────────────────┐
+  │  BUILD PHASE                               │
+  │                                            │
+  │  Coder → implements from PRD / request     │
+  │     │                                      │
+  │     ▼                                      │
+  │  Tester → PASS/FAIL/BLOCKED                │
+  │     │ FAIL → back to Coder (max 5 loops)   │
+  │     │ PASS ↓                               │
+  │     ▼                                      │
+  │  Reviewer → PASS/FAIL + gap list           │
+  │     │ FAIL → back to Coder (max 5 loops)   │
+  │     │ PASS ↓                               │
+  │     ▼                                      │
+  │  Compose-Reporter → docs/reports/          │
+  └────────────────────────────────────────────┘
+               │
+               ▼
+         You review result
+               │
+  Composer resets → asks: New feature? Debug? Iterate?
+```
 
-**2. Debugger tab** (standalone, user-triggered at any time) — Root-cause analysis using the **Brooks-Lint methodology** (Iron Law + 6 Decay Risks). Delegates investigation to Inspector, fixes to Fixer, and reports to Reporter. Does not depend on Composer — triggered directly by you.
-Debugger never reads files, edits code, or runs bash directly — all investigation, fixes, and reports are delegated to subagents.
+**Key rules:**
+- Composer has **no read/write/bash permissions** — all work delegated to subagents
+- Phase transition only via guardrail gates — no skipping
+- `Coder → Coder` loops without Tester verification are forbidden
+- 5 consecutive FAILs from Tester or Reviewer → surfaces to you
 
-After presenting the investigation outcome, Debugger resets and asks what you'd like to do next: investigate a new bug, switch to Composer for feature work, or re-investigate with new information.
+---
 
-### Exclusive Subagents
+### 🐛 Debugger — Bug Investigation
+
+Debugger is a **standalone primary agent** — does not depend on Composer. Trigger it directly from the Debugger tab whenever you find a bug.
+
+```
+You report a bug / defect
+        │
+        ▼
+  ┌─────────────────────────────────────────────┐
+  │  INVESTIGATE PHASE                          │
+  │                                             │
+  │  Delegate: Inspector                        │
+  │  Review mode (Debugger selects):            │
+  │  · PR Review        → classify R1-R6        │
+  │  · Architecture     → dependency analysis   │
+  │  · Tech Debt        → Pain × Spread score   │
+  │  · Test Quality     → classify T1-T6        │
+  │                                             │
+  │  Output: Iron Law chain per finding         │
+  │  Symptom → Source → Consequence → Remedy    │
+  └──────────┬──────────────────────────────────┘
+             │
+    Root cause identified?
+    ┌────────┴────────┐
+    │ Yes             │ No / unknowns remain
+    ▼                 ▼
+  ┌─────────────┐  Halt — surface to you
+  │  FIX PHASE  │  with specific questions
+  │             │
+  │  Delegate:  │
+  │  Fixer      │
+  │  → minimal  │
+  │    fix per  │
+  │  Iron Law   │
+  └──────┬──────┘
+         │
+         ▼
+  ┌──────────────────────────────────────┐
+  │  REPORT PHASE                        │
+  │                                      │
+  │  Delegate: Debug-Reporter            │
+  │  → Iron Law diagnosis report         │
+  │  → saved to docs/reports/            │
+  └──────────────────────────────────────┘
+         │
+         ▼
+   You review the diagnosis + fix
+         │
+  Debugger resets → asks: New bug? Feature work? Re-investigate?
+```
+
+**Key rules:**
+- Debugger has **no read/write/bash permissions** — all delegated to subagents
+- Never delegates Fixer without Inspector confirming root cause first
+- If unknowns remain after investigation → halts and prompts you, does not guess
+
+---
+
+### 🔍 Prober — Security Audit
+
+Prober is a **standalone primary agent** — does not depend on Composer or Debugger. Trigger it directly from the Prober tab to audit any codebase for security vulnerabilities and quality decay.
+
+```
+You trigger a security audit
+        │
+        ▼
+  ┌───────────────────────────────────────────────────┐
+  │  TRACE PHASE  (mandatory start)                   │
+  │                                                   │
+  │  Delegate: Tracer                                 │
+  │  → WSTG-guided breadth-first recon                │
+  │  → trace data flows: input → path → sink          │
+  │                                                   │
+  │  Output:                                          │
+  │  · Confirmed Vulnerabilities  (OWASP category,    │
+  │    location, data flow)                           │
+  │  · Suspected Vulnerabilities  (manual verify)     │
+  │  · Quality & Decay Risks      (e.g. hardcoded     │
+  │    secrets, missing input validation)             │
+  └──────────┬────────────────────────────────────────┘
+             │
+             ▼
+      GUARDRAIL GATE (question tool):
+      "Audit findings ready. How to proceed?"
+      ├── "Patch all confirmed findings"    → PATCH PHASE
+      ├── "Select specific findings"        → PATCH PHASE (you pick)
+      ├── "Audit only — no patches"         → AUDIT PHASE (skip PATCH)
+      └── "Re-investigate attack surface"  → re-delegate Tracer
+             │
+             ▼
+  ┌──────────────────────────────────────────────────┐
+  │  PATCH PHASE  (skipped if audit-only)            │
+  │                                                  │
+  │  Delegate: Patcher                               │
+  │  → Ponytail mindset: smallest correct diff       │
+  │  → prefer deleting the cause over wrapping it    │
+  │  → escalates to you if patch > 10 lines          │
+  └──────────┬───────────────────────────────────────┘
+             │
+             ▼
+  ┌──────────────────────────────────────────────────┐
+  │  AUDIT PHASE  (max 5 loops)                      │
+  │                                                  │
+  │  Delegate: Auditor                               │
+  │  → verify patch resolved vulnerabilities         │
+  │  → security regression check                     │
+  │  → Ponytail BLOAT analysis (over-engineering)    │
+  │                                                  │
+  │  PASS → proceed to report                        │
+  │  FAIL → re-delegate Patcher with Gap + BLOAT     │
+  │         lists verbatim (max 5 loops, then you)   │
+  │                                                  │
+  │  Delegate: Probe-Reporter                        │
+  │  → security audit report → docs/reports/         │
+  └──────────────────────────────────────────────────┘
+             │
+             ▼
+       You review the audit report
+             │
+  Prober resets → asks: New audit? Feature work? Bug investigation?
+```
+
+**Key rules:**
+- Prober has **no read/write/bash permissions** — all delegated to subagents
+- TRACE phase is always mandatory — no patching without recon first
+- GUARDRAIL GATE required before any patches are applied
+- 5 consecutive AUDIT FAILs → surfaces to you
+
+---
+
+## Subagent Reference
 
 Each subagent belongs to exactly one primary agent and cannot be invoked by anyone else:
 
-| Primary | Phase | Subagents | Role |
-|---------|-------|-----------|------|
-| Composer | EXPLORE | Researcher | Technical/codebase fact-finding (confirmed_facts/inferred_facts/unknowns/risks) |
-| Composer | PLAN | Plan-Writer | Stateless PRD formatter — writes to `docs/plans/`, missing input = TBD |
-| Composer | PLAN | Plan-Checker | **Gate** — validates PRD against original request, PASS/FAIL + gap list only |
-| Composer | BUILD | Coder | Writes and edits implementation code |
-| Composer | BUILD | Tester | Runs tests, reports PASS/FAIL/BLOCKED + coverage gaps |
-| Composer | BUILD | Reviewer | **Gate** — compares implementation against definition-of-done, PASS/FAIL + gap list only |
-| Composer | BUILD | Writer | Stateless document formatter — writes completion reports to `docs/reports/` |
+| Primary | Phase | Subagent | Role |
+|---------|-------|----------|------|
+| Composer | EXPLORE | Researcher | Fact-finding: confirmed_facts / inferred_facts / unknowns / risks |
+| Composer | PLAN | Plan-Writer | **Formatter** — writes PRD to `docs/plans/`, missing input = TBD |
+| Composer | PLAN | Plan-Checker | **Gate** — PASS/FAIL + gap list only, no suggestions |
+| Composer | BUILD | Coder | Implements code from PRD |
+| Composer | BUILD | Tester | PASS/FAIL/BLOCKED + coverage gaps only |
+| Composer | BUILD | Reviewer | **Gate** — PASS/FAIL + gap list only, no suggestions |
+| Composer | BUILD | Compose-Reporter | **Formatter** — completion report to `docs/reports/` |
 | Debugger | DEBUG | Inspector | Brooks-Lint RCA (Iron Law + 6 decay risks + 4 review modes) |
-| Debugger | DEBUG | Fixer | Applies minimal, root-cause-targeted fixes |
-| Debugger | DEBUG | Reporter | Stateless diagnosis report formatter (Iron Law structure) |
+| Debugger | DEBUG | Fixer | Minimal, root-cause-targeted fix |
+| Debugger | DEBUG | Debug-Reporter | **Formatter** — Iron Law diagnosis report to `docs/reports/` |
+| Prober | TRACE | Tracer | WSTG recon + vuln path tracing, no remedies |
+| Prober | PATCH | Patcher | Minimal, security-targeted fix (Ponytail, max 10 lines) |
+| Prober | AUDIT | Auditor | **Gate** — PASS/FAIL + Gap List + BLOAT List only |
+| Prober | AUDIT | Probe-Reporter | **Formatter** — security audit report to `docs/reports/` |
 
-### Workflow
+---
 
-```
-  You describe a feature / idea
-          │
-          ▼
-  Composer — always starts in EXPLORE phase
-          │
-  ┌───────┤
-  │       ▼
-  │  [Optional] Researcher → deep fact-finding
-  │       ▼
-  │  Synthesize findings → Internally assess complexity
-  │    ├── Simple → GUARDRAIL GATE 1a (question tool):
-  │    │   "Ready to build directly?"
-  │    │   ├── "Yes" → BUILD phase
-  │    │   ├── "Write a PRD first" → PLAN phase
-  │    │   └── "More research" → continue exploring
-  │    └── Complex → GUARDRAIL GATE 1b (question tool):
-  │        "Ready to write the PRD?"
-  │        ├── "Yes" → PLAN phase
-  │        └── "More research" → continue exploring
-  │       │                              │
-  │       ▼ (PLAN)                       ▼ (direct BUILD)
-  │  Plan-Writer → docs/plans/      Coder → Tester →
-  │  Plan-Checker validates         Reviewer → Writer → docs/reports/
-  │       │
-  │       ▼ (FAIL, max 3 loops)
-  │  Surface gaps → you pick remedy
-  │       │
-  │       ▼ (PASS)
-  │  GUARDRAIL GATE 2 (question tool):
-  │    "Build from this PRD?"
-  │    └── "Yes" → BUILD phase
-  │         Coder → Tester → Reviewer → Writer → docs/reports/
-         │
-         ▼
-  You review the result
-         │
-  (If bug found at any point → Debugger → Inspector → Fixer → Reporter → you verify)
-```
-
-### Flow Rules
+## Flow Rules
 
 | Rule | Detail |
 |------|--------|
-| **Mandatory EXPLORE start** | Composer always starts in EXPLORE phase — no skipping to Plan or Build without passing a guardrail gate |
-| **Complexity assessment** | Composer internally evaluates if the feature is simple (few files, low risk, clear approach) — this is LLM judgment, not user choice |
-| **Guardrail Gate 1** | Simple → question tool: "Ready to build directly?" Complex → question tool: "Ready to write the PRD?" Both paths require user confirmation |
-| **Guardrail Gate 2** | PLAN→BUILD: question tool asks "Build from this PRD?" with explicit confirmation |
-| **Direct build path** | Simple features can skip PLAN phase — Composer determines simplicity, user just confirms |
-| **Gate agents** | Plan-Checker and Reviewer output PASS/FAIL + gap list only — no improvement suggestions, no decisions |
-| **Researcher agents** | Researcher and Inspector output confirmed_facts/inferred_facts/unknowns/risks — no recommendations |
-| **Writer agents** | Plan-Writer, Writer, and Reporter are stateless formatters — missing input = TBD, never invent content |
-| **Phase-scoped delegation** | EXPLORE: researcher only. PLAN: plan-writer, plan-checker only. BUILD: coder, tester, reviewer, writer only |
-| **Build gate order** | Coder → Tester → Reviewer → Writer — no skipping, no Coder→Coder without verification |
-| **Plan-Checker FAIL loop** | Plan-checker FAIL → Composer surfaces gap remedies to you via question tool (MC options) → you pick → Composer routes to Plan-Writer. Max 3 loops, then surfaces to you for direction |
-| **Build FAIL loop** | 3 consecutive FAILs from Tester or Reviewer → Composer surfaces to you |
-| **Output directories** | Plan-Writer writes to `docs/plans/`. Writer writes to `docs/reports/`. Enforced by permissions |
-| **Debugger independence** | Debugger is standalone — does not flow through Composer, triggered directly by you |
+| **Mandatory starts** | Composer always starts in EXPLORE. Prober always starts in TRACE. No skipping. |
+| **Guardrail gates** | Composer: Gate 1 (EXPLORE→PLAN/BUILD), Gate 2 (PLAN→BUILD). Prober: Gate after TRACE. All require user confirmation. |
+| **Gate agents** | Plan-Checker, Reviewer, Auditor — PASS/FAIL + gap list only. No suggestions, no decisions. |
+| **Formatter agents** | Plan-Writer, Compose-Reporter, Debug-Reporter, Probe-Reporter — stateless. Missing input = TBD/NA. Never invent content. |
+| **Fact-finding agents** | Researcher, Inspector, Tracer — facts/inferences/risks only. No recommendations. |
+| **Build gate order** | Coder → Tester → Reviewer → Compose-Reporter. No skipping. No Coder→Coder without verification. |
+| **FAIL loops** | Plan-Checker FAIL: max 5 loops. Build FAIL (Tester/Reviewer): max 5 loops. Prober AUDIT FAIL: max 5 loops. All surface to you after limit. |
+| **Output directories** | PRDs → `docs/plans/`. Reports (Compose-Reporter, Debug-Reporter, Probe-Reporter) → `docs/reports/`. Enforced by permissions. |
+| **Independence** | Debugger and Prober are fully standalone — triggered directly, do not flow through Composer. |
 
-### Brooks-Lint Methodology (Debugger)
+---
 
-The Debugger group uses the [Brooks-Lint](https://hyhmrright.github.io/brooks-lint/guide.html) framework:
+## Brooks-Lint Methodology (Debugger)
+
+The Debugger pipeline uses the [Brooks-Lint](https://hyhmrright.github.io/brooks-lint/guide.html) framework:
 
 - **Iron Law** per finding: Symptom → Source → Consequence → Remedy
-- **6 Decay Risks (R1-R6)**: Cognitive Overload, Change Propagation, Knowledge Duplication, Accidental Complexity, Dependency Disorder, Domain Model Distortion
-- **4 Review Modes**: PR Review (R1-R6), Architecture Audit (dependency analysis), Tech Debt Assessment (Pain × Spread), Test Quality (T1-T6)
-- **T1-T6 Test Risks**: Test Obscurity, Brittleness, Duplication, Mock Abuse, Coverage Illusion, Architecture Mismatch
+- **6 Decay Risks (R1–R6)**: Cognitive Overload, Change Propagation, Knowledge Duplication, Accidental Complexity, Dependency Disorder, Domain Model Distortion
+- **4 Review Modes**: PR Review (R1–R6), Architecture Audit, Tech Debt Assessment (Pain × Spread), Test Quality (T1–T6)
+- **T1–T6 Test Risks**: Test Obscurity, Brittleness, Duplication, Mock Abuse, Coverage Illusion, Architecture Mismatch
 
-### Principle Hierarchy
+## Principle Hierarchy
 
-Conflict resolution follows a strict priority order (defined in `hierarchy.txt`):
+All agents resolve conflicts using this priority order (defined in `hierarchy.txt`):
 
-1. **PRD / Spec** (explicit requirement text)
-2. **Verdict** (Reviewer PASS/FAIL, Plan-Checker PASS/FAIL)
-3. **Engineering principles tied to correctness** (Fail Fast, Single Responsibility)
-4. **Heuristics** (KISS, DRY, SOLID, Law of Demeter)
-5. **Local optimization / style preference**
+1. **PRD / Spec** — explicit requirement text
+2. **Verdict** — Reviewer / Plan-Checker / Auditor PASS/FAIL
+3. **Engineering principles** — Fail Fast, Single Responsibility
+4. **Heuristics** — KISS, DRY, SOLID, Law of Demeter
+5. **Local optimization** — style preference
+
+---
 
 ## Install
 
@@ -140,63 +301,57 @@ npx pluidr init
 
 ## Usage
 
-### pluidr init
+### `pluidr init`
 
-Prompts you to select models for two agent tiers, then:
+Prompts you to select models for two agent tiers (reasoning-heavy and fast), then:
 
-- Asks whether to install the pluidr-squeeze plugin (can decline squeeze download)
-- Builds a complete opencode.jsonc config with the chosen models injected into the right agents
-- Backs up any existing config at ~/.config/opencode/opencode.jsonc to opencode.jsonc.bak
-- Writes the new config to ~/.config/opencode/opencode.jsonc
-- Copies agent system-prompt files into ~/.config/opencode/prompts/
-- Copies the bundled pluidr-flow and pluidr-squeeze plugins into ~/.config/opencode/plugins/
-- Writes a package.json into ~/.config/opencode/ declaring @opencode-ai/plugin as a dependency (OpenCode installs it automatically on first launch via its bundled Bun runtime)
+- Asks whether to install the pluidr-squeeze plugin (can decline)
+- Builds a complete `opencode.jsonc` config with the chosen models injected into the right agents
+- Backs up any existing config to `opencode.jsonc.bak.*`
+- Writes the new config to `~/.config/opencode/opencode.jsonc`
+- Copies all 18 agent prompt files into `~/.config/opencode/prompts/`
+- Copies `pluidr-flow` and `pluidr-squeeze` plugins into `~/.config/opencode/plugins/`
+- Writes a `package.json` declaring `@opencode-ai/plugin` as a dependency
 
-On completion, prints:
-`
-Pluidr setup complete!
-You can update your agent model settings later in opencode.jsonc
-`
-The filename opencode.jsonc (second line) is a clickable terminal hyperlink — Ctrl+click to open the config in your default editor.
+### `pluidr doctor`
 
-### pluidr uninstall
+Checks installation health and reports ✓/✗ for each component:
 
-Removes Pluidr artifacts and restores your previous configuration:
-
-- Finds the latest timestamped backup (opencode.jsonc.bak.*) in ~/.config/opencode/
-- Restores it to opencode.jsonc
-- Removes prompts/, plugins/, and bin/ directories
-- Does NOT remove opencode.jsonc itself (preserves user customizations)
-- Does NOT remove package.json (may be used by other plugins)
-- Prints a summary of what was removed and restored
-
-### pluidr update
-
-Re-runs the setup wizard (same as pluidr init). Before writing, warns if existing config is found and asks for confirmation.
-
-### pluidr doctor
-
-Checks installation health and reports PASS/FAIL for each component:
-
-- opencode.jsonc exists
-- All 13 prompt files exist
-- Both plugin files exist
-- package.json with @opencode-ai/plugin dependency
-- squeeze binary is available
+- `opencode.jsonc` exists
+- All 18 prompt files present
+- Both plugin files present
+- `package.json` with `@opencode-ai/plugin` dependency
+- squeeze binary available
 - Config is valid JSON
 
-Prints a summary table with ✓/✗ status. Exits with code 0 if all pass, 1 if any fail.
+Exits with code `0` if all pass, `1` if any fail.
 
-## Bundled plugins
+### `pluidr update`
 
-Pluidr ships with two plugins:
+Re-runs the setup wizard. Warns if existing config is found and asks for confirmation before overwriting.
 
-**`pluidr-flow`** — provides subagents with three tools for cross-session context access:
+### `pluidr uninstall`
+
+Restores your previous configuration:
+
+- Finds the latest timestamped backup and restores it to `opencode.jsonc`
+- Removes `prompts/`, `plugins/`, and `bin/` directories
+- Preserves `opencode.jsonc` and `package.json`
+
+---
+
+## Bundled Plugins
+
+### `pluidr-flow`
+
+Provides subagents with cross-session context access:
 
 - `parent_session_messages` — read the parent session's transcript
 - `session_messages(sessionId)` — read any session by ID
 - `session_messages_batch(sessionIds)` — read multiple sessions in one call
 
-**`pluidr-squeeze`** — hooks into tool execution to rewrite bash commands through the `squeeze` binary, filtering verbose output and saving 60-90% of tokens across all agents.
+### `pluidr-squeeze`
 
-`pluidr init` installs both plugins and their dependency declaration automatically — no extra user action. `pluidr-squeeze` also downloads the engine to `~/.config/opencode/bin/`. On OpenCode's first launch, the bundled Bun runtime installs `@opencode-ai/plugin` from the generated `package.json`, then both plugins become available to all agents.
+Hooks into tool execution to rewrite bash commands through the `squeeze` binary, filtering verbose output and saving **60–90% of tokens** across all agents.
+
+Both plugins and their dependency declaration are installed automatically by `pluidr init` — no extra user action required. On OpenCode's first launch, the bundled Bun runtime installs `@opencode-ai/plugin` from the generated `package.json`.

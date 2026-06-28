@@ -7,8 +7,10 @@
       "debugger",
       "researcher",
       "plan-checker",
-      "inspector"
+      "inspector",
+      "prober"
     ],
+
     "recommended": [
       {
         "value": "opencode/big-pickle",
@@ -28,11 +30,16 @@
       "coder",
       "tester",
       "reviewer",
-      "writer",
+      "compose-reporter",
       "fixer",
       "plan-writer",
-      "reporter"
+      "debug-reporter",
+      "tracer",
+      "patcher",
+      "auditor",
+      "probe-reporter"
     ],
+
     "recommended": [
       {
         "value": "opencode/deepseek-v4-flash-free",

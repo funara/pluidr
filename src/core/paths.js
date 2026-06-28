@@ -5,5 +5,5 @@ const BASE = join(homedir(), ".config", "opencode")
 
 export const getConfigDir = () => BASE
 export const getConfigPath = () => join(BASE, "opencode.jsonc")
-export const getBackupPath = () => join(BASE, "opencode.jsonc.bak")
 export const getPromptsDir = () => join(BASE, "prompts")
+// ponytail: getBackupPath removed (YAGNI)

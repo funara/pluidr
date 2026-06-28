@@ -19,21 +19,21 @@ describe("agentPromptWriter", () => {
     mkdirSync(agentPromptsDir, { recursive: true })
 
     writeFileSync(join(agentPromptsDir, "coder.txt"), "test instructions", "utf-8")
-    writeFileSync(join(agentPromptsDir, "writer.txt"), "write docs", "utf-8")
+    writeFileSync(join(agentPromptsDir, "compose-reporter.txt"), "write docs", "utf-8")
 
     writeAgentPrompts(tmpDir, destDir)
 
     const coderContent = readFileSync(join(destDir, "coder.txt"), "utf-8")
-    const writerContent = readFileSync(join(destDir, "writer.txt"), "utf-8")
+    const composeReporterContent = readFileSync(join(destDir, "compose-reporter.txt"), "utf-8")
 
     assert.ok(coderContent.startsWith('You are the "coder" agent.\n\n'),
       "coder should have identity header")
-    assert.ok(writerContent.startsWith('You are the "writer" agent.\n\n'),
-      "writer should have identity header")
+    assert.ok(composeReporterContent.startsWith('You are the "compose-reporter" agent.\n\n'),
+      "compose-reporter should have identity header")
     assert.ok(coderContent.includes("test instructions"),
       "original content preserved in coder")
-    assert.ok(writerContent.includes("write docs"),
-      "original content preserved in writer")
+    assert.ok(composeReporterContent.includes("write docs"),
+      "original content preserved in compose-reporter")
 
     rmSync(tmpDir, { recursive: true })
   })

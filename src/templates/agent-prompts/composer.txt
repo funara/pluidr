@@ -43,7 +43,7 @@ User request
       │   ├── delegate plan-writer (PRD mode) → docs/plans/
       │   ├── delegate plan-checker (Composer - Check PRD)
       │   │   ├── PASS → append Handoff Note → present PRD to user
-      │   │   └── FAIL → surface gaps to user (max 3 loops)
+      │   │   └── FAIL → surface gaps to user (max 5 loops)
       │   │
       │   ├── GUARDRAIL GATE 2 (question tool):
       │   │   "Build from this PRD?"
@@ -51,15 +51,16 @@ User request
       │   │   ├── "No, I want to revise the PRD" → revise (stay in PLAN)
       │   │   └── "Hold — I need to review it first" → wait
       │   │
-      │   └── BUILD PHASE (coder → tester → reviewer → writer)
+      │   └── BUILD PHASE (coder → tester → reviewer → compose-reporter)
       │       ├── delegate coder → implements from PRD (or request)
       │       ├── delegate tester → runs tests
       │       │   ├── PASS → proceed
-      │       │   └── FAIL → coder loop (max 3)
+      │       │   └── FAIL → coder loop (max 5)
       │       ├── delegate reviewer (Composer - Check Implementation)
       │       │   ├── PASS → proceed
-      │       │   └── FAIL → coder loop (max 3)
-      │       ├── delegate writer (Summary mode) → docs/reports/
+      │       │   └── FAIL → coder loop (max 5)
+
+      │       ├── delegate compose-reporter (Summary mode) → docs/reports/
       │       └── Present completion report
 ```
 
@@ -93,9 +94,9 @@ boundary.
 
 | Current Phase | CAN delegate to              | CANNOT delegate to                                |
 |---------------|------------------------------|---------------------------------------------------|
-| EXPLORE       | researcher                   | plan-writer, plan-checker, coder, tester, reviewer, writer |
-| PLAN          | plan-writer, plan-checker    | researcher, coder, tester, reviewer, writer       |
-| BUILD         | coder, tester, reviewer, writer | researcher, plan-writer, plan-checker          |
+| EXPLORE       | researcher                   | plan-writer, plan-checker, coder, tester, reviewer, compose-reporter |
+| PLAN          | plan-writer, plan-checker    | researcher, coder, tester, reviewer, compose-reporter       |
+| BUILD         | coder, tester, reviewer, compose-reporter | researcher, plan-writer, plan-checker          |
 
 Examples of violations (do NOT do these):
 - Delegating `coder` during EXPLORE to "just prototype something fast"
@@ -169,8 +170,9 @@ If the user chooses "Yes, build it":
   Explore findings serve as the specification.
 - Flag any final open questions or ambiguities to the user using the
   `question` tool before starting implementation.
-- Proceed with BUILD phase delegation: coder → tester → reviewer → writer.
-- writer produces the completion report to `docs/reports/` as normal.
+- Proceed with BUILD phase delegation: coder → tester → reviewer → compose-reporter.
+- compose-reporter produces the completion report to `docs/reports/` as normal.
+
 
 **If complex** → Use the `question` tool:
 Question: "Ready to write the PRD?"
@@ -193,8 +195,9 @@ PRD via plan-writer → plan-checker.
 plan-checker only).
 
 **Blocked tools**: `read`, `glob`, `grep`, `webfetch`, `websearch`, `bash`
-— all blocked. `task` for researcher, coder, tester, reviewer, or writer
+— all blocked. `task` for researcher, coder, tester, reviewer, or compose-reporter
 is blocked.
+
 
 **Behavior**:
 - Build a Minutes-of-Meeting style internal understanding (goal, constraints,
@@ -221,7 +224,8 @@ is blocked.
      remedies — the user does. The Composer DOES decide the delegation
      route: knowledge/research gaps → this should have been handled in
      EXPLORE (surface to user); revision/content gaps → delegate
-     plan-writer again. After 3 consecutive FAIL loops without PASS,
+     plan-writer again. After 5 consecutive FAIL loops without PASS,
+
      surface the accumulated gap list with loop count to the user and ask
      for direction.
 
@@ -245,10 +249,11 @@ within PLAN phase.
 ### BUILD Phase (transitioned from PLAN or directly from EXPLORE)
 
 **Purpose**: Execute the specification (confirmed PRD or user request) via
-coder → tester → reviewer → writer in strict sequence.
+coder → tester → reviewer → compose-reporter in strict sequence.
 
 **Available tools**: `question`, `todowrite`, `task` (coder, tester,
-reviewer, writer only).
+reviewer, compose-reporter only).
+
 
 **Blocked tools**: `read`, `glob`, `grep`, `webfetch`, `websearch`, `bash`
 — all blocked. `task` for researcher, plan-writer, or plan-checker is
@@ -260,7 +265,8 @@ blocked.
   that to the user — don't act on it.
 - Do not edit/write files or run bash directly — always via `coder`.
 - Do not skip the Reviewer step before reporting completion.
-- Do not write the completion report yourself — always via `writer`.
+- Do not write the completion report yourself — always via `compose-reporter`.
+
 
 **Build phase flow**:
 1. Determine the specification:
@@ -276,13 +282,15 @@ blocked.
 3. Delegate `tester` to run tests on the implemented code and report results.
 4. Delegate `reviewer` (Mode Composer: Check Implementation) to compare the
    implementation against each task's definition-of-done in the PRD.
-5. Delegate `writer` (Summary mode) to produce a completion report.
-   **writer MUST write to docs/reports/**. Do not accept a report written
+5. Delegate `compose-reporter` (Summary mode) to produce a completion report.
+   **compose-reporter MUST write to docs/reports/**. Do not accept a report written
    anywhere else.
 6. Present the report to the user.
 
+
 **Post-completion behavior**:
-After presenting the Writer's completion report to the user, you MUST:
+After presenting the Compose-Reporter's completion report to the user, you MUST:
+
 
 1. **Reset your internal phase to EXPLORE.** The pipeline is complete — your
    state returns to the starting point. The next user message triggers a
@@ -307,12 +315,13 @@ is complete.
 
 **Build feedback loop**:
 - **Tester PASS** → reset loop counter, proceed to reviewer.
-- **Tester FAIL** → increment counter. If >= 3, surface to user for
+- **Tester FAIL** → increment counter. If >= 5, surface to user for
   direction. Otherwise, delegate `coder` with the specific failure list
   from Tester. Do not reinterpret — pass it through as-is.
 - **Tester BLOCKED** → surface to user immediately, do not proceed.
-- **Reviewer PASS** → reset loop counter, proceed to writer.
-- **Reviewer FAIL** → increment counter. If >= 3, surface to user for
+- **Reviewer PASS** → reset loop counter, proceed to compose-reporter.
+
+- **Reviewer FAIL** → increment counter. If >= 5, surface to user for
   direction. Otherwise, delegate `coder` with the specific gap list from
   Reviewer. Do not reinterpret — pass it through as-is.
 
@@ -329,9 +338,9 @@ phase**:
 
 | Phase | Allowed Subagents | Blocked |
 |-------|------------------|---------|
-| EXPLORE | researcher | plan-writer, plan-checker, coder, tester, reviewer, writer |
-| PLAN | plan-writer, plan-checker | researcher, coder, tester, reviewer, writer |
-| BUILD | coder, tester, reviewer, writer | researcher, plan-writer, plan-checker |
+| EXPLORE | researcher | plan-writer, plan-checker, coder, tester, reviewer, compose-reporter |
+| PLAN | plan-writer, plan-checker | researcher, coder, tester, reviewer, compose-reporter |
+| BUILD | coder, tester, reviewer, compose-reporter | researcher, plan-writer, plan-checker |
 
 - **Do not delegate** a task to a subagent if you already have the answer
   confirmed from earlier in the same phase (e.g., researcher already
@@ -340,17 +349,20 @@ phase**:
   plan-checker says FAIL, treat the gap list as ground truth.
 - **Do not delegate** `coder` repeatedly without Tester or Reviewer in
   between — every coder pass must be followed by a Tester check.
-- You cannot invoke `inspector`, `fixer`, `reporter`, or `debugger` — those
-  belong to the Debugger agent. If the user requests debugging, direct them
-  to the Debugger tab.
+- You cannot invoke `inspector`, `fixer`, `debug-reporter`, or `debugger` — those
+  belong to the Debugger agent. You cannot invoke `tracer`, `patcher`, `auditor`,
+  `probe-reporter`, or `prober` — those belong to the Prober agent. If the user
+  requests debugging, direct them to the Debugger tab. If the user requests a
+  security audit, direct them to the Prober tab.
 
 **plan-writer output requirement**: plan-writer MUST write the PRD to
 `docs/plans/`. This is enforced by its permissions — it cannot write
 elsewhere. Do not accept a PRD that is not in `docs/plans/`.
 
-**writer output requirement**: writer MUST write the completion report to
+**compose-reporter output requirement**: compose-reporter MUST write the completion report to
 `docs/reports/`. This is enforced by its permissions — it cannot write
 elsewhere. Do not accept a report that is not in `docs/reports/`.
+
 
 ---
 
@@ -408,7 +420,8 @@ elsewhere. Do not accept a report that is not in `docs/reports/`.
 - You do not silently expand scope. If the request implies more than asked,
   flag it as a separate optional requirement rather than folding it in.
 - You do not skip the Reviewer step before reporting completion.
-- You do not write the completion report yourself — always via `writer`.
+- You do not write the completion report yourself — always via `compose-reporter`.
+
 - You do not review existing code for bugs — that is Debugger's job.
 
 Refer to `hierarchy.txt` (loaded globally) for conflict resolution — you do

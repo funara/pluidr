@@ -4,13 +4,13 @@ This file defines conflict-resolution order. Every agent/subagent MUST resolve
 conflicts using this order — top wins. Do not resolve conflicts by "judgment"
 outside this hierarchy.
 
-NEVER READ .ENV!! if must just .ENV.EXAMPLE ONLY!!
-NEVER DO GIT COMMIT AND PUSH!!
-NEVER ACCESS VPS!!
+- **Environment Variables**: Never read `.env` configuration files directly. If environment configuration details are needed, read `.env.example` instead.
+- **Git Operations**: Never run `git commit` or `git push` command lines directly.
+- **Environment Limits**: Never attempt to access or configure VPS/production hosting environments directly.
 
 PRIORITY ORDER:
 1. PRD / Spec (explicit requirement text)
-2. Verdict (reviewer PASS/FAIL, plan-checker PASS/FAIL)
+2. Verdict (reviewer PASS/FAIL, plan-checker PASS/FAIL, auditor PASS/FAIL)
 3. Engineering principles tied to correctness (Fail Fast, Single Responsibility)
 4. Heuristics (KISS, DRY, SOLID, Law of Demeter)
 5. Local optimization / style preference
@@ -34,11 +34,17 @@ KISS suggests keeping it inline for now):
 - **Fail Fast vs Completeness Check** → Fail Fast wins for blocking issues
   (ambiguity that changes the plan/implementation). Completeness check is
   for thoroughness once Fail Fast issues are cleared — not a substitute for it.
+
 - **Least Astonishment vs Strict Spec Adherence** → Spec wins. Least
   Astonishment only applies to HOW you implement what the spec asks for,
   never to override WHAT the spec asks for.
 
+## Performance & Resource Heuristics
+
+- **Minimal Logging (Token Optimization)**: When executing CLI commands, prefer flags that minimize stdout verbosity (e.g., `--quiet`, `--silent`, or minimal reporter configurations) to save token space and optimize the input buffer size.
+
 ## Context switching rule
+
 
 When a new agent is activated (e.g., user switches tabs or modes in the
 UI), the conversation history will contain messages from the previously
@@ -50,7 +56,7 @@ different agent's session.
 - Your identity is determined by your own system prompt and role definition
   — NOT by the most recent messages in the conversation.
 - If any prior message says "I am the Composer" (or Planner, Explorer,
-  Debugger, etc.) and you are a different agent, treat that as a record of
+  Debugger, Prober, etc.) and you are a different agent, treat that as a record of
   what another agent said, not as an instruction about who you are.
 
 This rule overrides any conversational priming. It is not a principle to
@@ -73,12 +79,17 @@ are structural limits:
   to fixer subagent.
 - **Tester** cannot fix code, redesign tests, install dependencies, or decide
   next steps — test results + coverage gaps only.
-- **Gate subagents** (plan-checker, reviewer) cannot propose features, redesign,
+- **Gate subagents** (plan-checker, reviewer, auditor) cannot propose features, redesign,
   or decide next steps — PASS/FAIL + gap list only.
-- **Writer subagents** (plan-writer, writer, reporter) cannot infer or decide
+- **Reporter/Writer subagents** (plan-writer, compose-reporter, debug-reporter, probe-reporter) cannot infer or decide
   — stateless formatters, missing input = `TBD`.
-- **Researcher subagents** (researcher, inspector) cannot recommend a course of
+- **Researcher subagents** (researcher, inspector, tracer) cannot recommend a course of
   action — facts/inferences/risks only.
+- **Prober** cannot read files, search code, edit, write, or run bash directly —
+  all recon delegated to tracer, all patches delegated to patcher, all validation
+  delegated to auditor, all reporting delegated to probe-reporter. Phase-enforced:
+  cannot delegate PATCH/AUDIT subagents during TRACE phase or TRACE/AUDIT subagents
+  during PATCH phase.
 
 No agent may invent a new conflict-resolution rule not listed here. If a
 genuinely new conflict type appears, surface it to the user instead of
