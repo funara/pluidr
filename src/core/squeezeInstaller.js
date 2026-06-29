@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process"
-import { chmodSync, mkdirSync, existsSync, writeFileSync, unlinkSync, readFileSync } from "node:fs"
+import { chmodSync, mkdirSync, existsSync, writeFileSync, unlinkSync, readFileSync, renameSync } from "node:fs"
 import { extname, join, resolve, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import { createHash } from "node:crypto"
@@ -7,7 +7,10 @@ import { getConfigDir } from "./paths.js"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-const BIN_NAME = process.platform === "win32" ? "rtk.exe" : "rtk"
+// Local binary name — friendlier than the upstream "rtk" name
+const BIN_NAME = process.platform === "win32" ? "squeeze.exe" : "squeeze"
+// Name of the binary inside the downloaded archive (upstream uses "rtk")
+const RTK_BIN_NAME = process.platform === "win32" ? "rtk.exe" : "rtk"
 export const ASSETS = {
   "darwin-arm64": "rtk-aarch64-apple-darwin.tar.gz",
   "darwin-x64": "rtk-x86_64-apple-darwin.tar.gz",
@@ -28,10 +31,10 @@ export function validatePath(path) {
   }
 }
 
-export function findRtkPath() {
+export function findSqueezePath() {
   try {
     const [cmd, ...args] =
-      process.platform === "win32" ? ["where", "rtk"] : ["which", "rtk"]
+      process.platform === "win32" ? ["where", "squeeze"] : ["which", "squeeze"]
     return execFileSync(cmd, args, { stdio: "pipe" })
       .toString()
       .trim()
@@ -85,13 +88,13 @@ function verifyChecksum(buffer, assetName) {
 }
 
 export async function installSqueeze() {
-  let rtkPath = findRtkPath()
+  let rtkPath = findSqueezePath()
 
   if (!rtkPath) {
     // Not on PATH — download it to the managed location
     const asset = platformAsset()
     if (!asset) {
-      console.warn("⚠ Squeeze: unsupported platform — install rtk manually")
+      console.warn("⚠ Squeeze: unsupported platform — squeeze binary unavailable")
       return
     }
 
@@ -127,14 +130,31 @@ export async function installSqueeze() {
 
       try { unlinkSync(archivePath) } catch {}
 
+      // Archive contains "rtk"/"rtk.exe" — rename to local BIN_NAME ("squeeze")
+      const extracted = join(binDir, RTK_BIN_NAME)
       rtkPath = join(binDir, BIN_NAME)
+      if (existsSync(extracted) && extracted !== rtkPath) {
+        renameSync(extracted, rtkPath)
+      }
 
       if (process.platform !== "win32" && existsSync(rtkPath)) {
         chmodSync(rtkPath, 0o755)
       }
-    } catch {
+
+      // Verify that the downloaded binary is executable and runs on this platform
+      try {
+        execFileSync(rtkPath, ["--help"], { stdio: "ignore" })
+      } catch (err) {
+        // If it throws because of execution format or permissions (e.g. ENOEXEC, EACCES, ENOENT)
+        if (err.code === "ENOEXEC" || err.code === "EACCES" || err.code === "ENOENT") {
+          try { unlinkSync(rtkPath) } catch {}
+          throw new Error(`Downloaded binary is not executable on this platform: ${err.message}`)
+        }
+        // If it ran but exited with non-zero (like returning exit code 1 for --help), that's fine, it means it is executable!
+      }
+    } catch (err) {
       try { unlinkSync(archivePath) } catch {}
-      console.warn("⚠ Squeeze: download failed after 3 attempts — install rtk manually")
+      console.warn(`⚠ Squeeze: installation failed (${err.message}) — squeeze plugin disabled`)
       return
     }
   }

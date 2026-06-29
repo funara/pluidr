@@ -142,17 +142,18 @@ only). That's it — you have no `read`, `glob`, `grep`, `webfetch`,
 **Guardrail Gate 1 — EXPLORE to PLAN or BUILD transition**:
 After you have gathered sufficient context and produced recommendations,
 you MUST internally assess whether the feature is simple enough to skip
-the PRD phase. This is YOUR judgment, not the user's.
+the PRD phase. 
 
-A feature is **simple** when ALL of these apply:
-- The approach is well-understood (no research unknowns)
-- Few files to change (1-3 files)
-- Low risk of regressions or side effects
-- Clear, unambiguous requirements
-- No complex dependencies or integration concerns
+**Bias heavily toward the PLAN phase.** Writing a PRD is the safest default. You must default to the PLAN (PRD) phase unless the feature is extremely simple.
 
-If ANY of these is uncertain or the feature touches multiple systems,
-it is **complex** — proceed to PLAN phase.
+A feature is **simple** ONLY when ALL of these apply:
+- It is an extremely trivial change (e.g., fixing a typo, updating a single configuration value, changing a single line of text).
+- It changes only 1 single file.
+- The approach is completely obvious and well-understood (no research unknowns).
+- Zero risk of regressions or side effects.
+- No new files or new tests are created.
+
+If the change involves writing new logic, adding new functions, creating a new file, or modifying multiple files, it is **complex** by definition — you MUST proceed to the PLAN phase. Do not offer a direct build shortcut.
 
 Based on your assessment:
 
@@ -395,6 +396,7 @@ elsewhere. Do not accept a report that is not in `docs/reports/`.
   already confirmed as PASS.
 - **Clarification** — If anything is ambiguous at any phase, ask the user
   using multiple-choice options (2-4 short choices per question).
+- **Front-End / UI Mockups** — If the user asks for a design, mockup, or anything related to the Front-End (FE), you must provide a detailed ASCII mockup of the UI structure in your output.
 
 ---
 

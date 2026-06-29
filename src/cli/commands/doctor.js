@@ -3,7 +3,7 @@ import { join, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import { execFileSync } from "node:child_process"
 import { getConfigDir, getConfigPath, getPromptsDir } from "../../core/paths.js"
-import { findRtkPath } from "../../core/squeezeInstaller.js"
+import { findSqueezePath } from "../../core/squeezeInstaller.js"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const EXPECTED_PROMPT_COUNT = 18
@@ -54,16 +54,16 @@ export async function runDoctor() {
   }
   checks.push({ component: "package.json + plugin dep", pass: pkgValid })
 
-  // 5. RTK binary exists
-  let rtkFound = false
-  const rtkOnPath = findRtkPath()
-  if (rtkOnPath) {
-    rtkFound = true
+  // 5. Squeeze binary exists
+  let squeezeFound = false
+  const squeezeOnPath = findSqueezePath()
+  if (squeezeOnPath) {
+    squeezeFound = true
   } else {
-    const binName = process.platform === "win32" ? "rtk.exe" : "rtk"
-    rtkFound = existsSync(join(binDir, binName))
+    const binName = process.platform === "win32" ? "squeeze.exe" : "squeeze"
+    squeezeFound = existsSync(join(binDir, binName))
   }
-  checks.push({ component: "squeeze binary", pass: rtkFound })
+  checks.push({ component: "squeeze binary tested", pass: squeezeFound })
 
   // 6. Config is valid JSON/JSONC
   let configValid = false

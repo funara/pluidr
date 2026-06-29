@@ -6,6 +6,16 @@
       "*.env": "deny",
       "*.env.*": "deny",
       "secrets/**": "deny"
+    },
+    "edit": {
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "secrets/**": "deny"
+    },
+    "write": {
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "secrets/**": "deny"
     }
   },
   "agent": {
@@ -75,17 +85,8 @@
         "read": "allow",
         "glob": "allow",
         "grep": "allow",
-        "edit": {
-          "*": "deny",
-          "src/**": "allow",
-          "*.{json,md,txt}": "allow",
-          "package.json": "allow"
-        },
-        "write": {
-          "*": "deny",
-          "src/**": "allow",
-          "*.{json,md,txt}": "allow"
-        },
+        "edit": "allow",
+        "write": "allow",
         "todowrite": "allow",
         "bash": {
           "*": "deny",
@@ -99,17 +100,10 @@
           "mv *": "allow",
           "cat *": "allow",
           "ls *": "allow",
-          "pwd": "allow",
-          "echo *": "allow",
           "rg *": "allow",
           "grep *": "allow",
           "find *": "allow",
-          "which *": "allow",
-          "where *": "allow",
-          "dir *": "allow",
-          "type *": "allow",
-          "node --test": "allow",
-          "cd *": "allow"
+          "node --test": "allow"
         },
         "task": "deny"
       }
@@ -117,7 +111,7 @@
 
     "tester": {
       "mode": "subagent",
-      "description": "Runs tests on implemented code and reports results (PASS/FAIL/BLOCKED) with coverage gaps. Cannot fix code, redesign tests, or decide next steps.",
+      "description": "Runs tests on implemented code and reports results (PASS/FAIL/BLOCKED) with coverage gaps. Cannot fix code, install deps, or decide next steps.",
       "prompt": "{file:./prompts/tester.txt}",
       "permission": {
         "read": "allow",
@@ -126,7 +120,19 @@
         "edit": "deny",
         "write": "deny",
         "todowrite": "deny",
-        "bash": "allow",
+        "bash": {
+          "*": "deny",
+          "node --test": "allow",
+          "npm test": "allow",
+          "npx *": "allow",
+          "rg *": "allow",
+          "grep *": "allow",
+          "find *": "allow",
+          "cat *": "allow",
+          "ls *": "allow",
+          "git diff*": "allow",
+          "git log*": "allow"
+        },
         "task": "deny"
       }
     },
@@ -156,14 +162,23 @@
 
     "compose-reporter": {
       "mode": "subagent",
-      "description": "Text-file executor for Composer. Writes and edits .md/.txt files across the project — like coder but for documents only. No bash.",
+      "description": "Text-file executor for Composer. Writes and edits .md/.txt files under docs/ — stateless formatter for documents only. No bash.",
       "prompt": "{file:./prompts/compose-reporter.txt}",
       "permission": {
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "edit": "allow",
-        "write": "allow",
+        "read": {
+          "*": "deny",
+          "docs/**": "allow"
+        },
+        "glob": "deny",
+        "grep": "deny",
+        "edit": {
+          "*": "deny",
+          "docs/**": "allow"
+        },
+        "write": {
+          "*": "deny",
+          "docs/**": "allow"
+        },
         "bash": "deny",
         "todowrite": "deny",
         "task": "deny"
@@ -181,7 +196,16 @@
         "grep": "allow",
         "edit": "deny",
         "write": "deny",
-        "bash": "deny",
+        "bash": {
+          "*": "deny",
+          "rg *": "allow",
+          "grep *": "allow",
+          "find *": "allow",
+          "cat *": "allow",
+          "ls *": "allow",
+          "node --version": "allow",
+          "npm --version": "allow"
+        },
         "webfetch": "allow",
         "websearch": "allow",
         "task": "deny"
@@ -193,9 +217,12 @@
       "description": "Stateless formatter for Composer. Produces PRD documents from structured input — no inference, no decisions. PRD mode only.",
       "prompt": "{file:./prompts/plan-writer.txt}",
       "permission": {
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
+        "read": {
+          "*": "deny",
+          "docs/plans/**": "allow"
+        },
+        "glob": "deny",
+        "grep": "deny",
         "edit": {
           "*": "deny",
           "docs/plans/**": "allow"
@@ -264,41 +291,28 @@
         "read": "allow",
         "glob": "allow",
         "grep": "allow",
-        "edit": {
-          "*": "deny",
-          "src/**": "allow",
-          "*.{json,md,txt}": "allow",
-          "package.json": "allow"
-        },
-        "write": {
-          "*": "deny",
-          "src/**": "allow",
-          "*.{json,md,txt}": "allow"
-        },
+        "edit": "allow",
+        "write": "allow",
         "todowrite": "allow",
         "bash": {
           "*": "deny",
+          "node --test": "allow",
+          "npm test": "allow",
           "npm *": "allow",
           "npx *": "allow",
           "node *": "allow",
-          "git *": "allow",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git show*": "allow",
           "mkdir *": "allow",
           "cp *": "allow",
           "rm *": "allow",
           "mv *": "allow",
           "cat *": "allow",
           "ls *": "allow",
-          "pwd": "allow",
-          "echo *": "allow",
           "rg *": "allow",
           "grep *": "allow",
-          "find *": "allow",
-          "which *": "allow",
-          "where *": "allow",
-          "dir *": "allow",
-          "type *": "allow",
-          "node --test": "allow",
-          "cd *": "allow"
+          "find *": "allow"
         },
         "task": "deny"
       }
@@ -309,9 +323,12 @@
       "description": "Stateless formatter for Debugger. Produces diagnosis + remedy reports from structured input — no inference, no decisions. Summary mode only.",
       "prompt": "{file:./prompts/debug-reporter.txt}",
       "permission": {
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
+        "read": {
+          "*": "deny",
+          "docs/reports/**": "allow"
+        },
+        "glob": "deny",
+        "grep": "deny",
         "edit": {
           "*": "deny",
           "docs/reports/**": "allow"
@@ -361,7 +378,22 @@
         "grep": "allow",
         "edit": "deny",
         "write": "deny",
-        "bash": "allow",
+        "bash": {
+          "*": "deny",
+          "rg *": "allow",
+          "grep *": "allow",
+          "find *": "allow",
+          "cat *": "allow",
+          "ls *": "allow",
+          "git log*": "allow",
+          "git diff*": "allow",
+          "git show*": "allow",
+          "git blame*": "allow",
+          "node --version": "allow",
+          "npm --version": "allow",
+          "which *": "allow",
+          "where *": "allow"
+        },
         "task": "deny"
       }
     },
@@ -374,18 +406,8 @@
         "read": "allow",
         "glob": "allow",
         "grep": "allow",
-        "edit": {
-          "*": "deny",
-          "src/**": "allow",
-          "*.{json,md,txt}": "allow",
-          "package.json": "allow"
-        },
-        "write": {
-          "*": "deny",
-          "src/**": "allow",
-          "*.{json,md,txt}": "allow"
-        },
-        "todowrite": "allow",
+        "edit": "allow",
+        "write": "allow",
         "bash": {
           "*": "deny",
           "npm *": "allow",
@@ -398,17 +420,10 @@
           "mv *": "allow",
           "cat *": "allow",
           "ls *": "allow",
-          "pwd": "allow",
-          "echo *": "allow",
           "rg *": "allow",
           "grep *": "allow",
           "find *": "allow",
-          "which *": "allow",
-          "where *": "allow",
-          "dir *": "allow",
-          "type *": "allow",
-          "node --test": "allow",
-          "cd *": "allow"
+          "node --test": "allow"
         },
         "task": "deny"
       }
@@ -424,7 +439,17 @@
         "grep": "allow",
         "edit": "deny",
         "write": "deny",
-        "bash": "allow",
+        "bash": {
+          "*": "deny",
+          "rg *": "allow",
+          "grep *": "allow",
+          "find *": "allow",
+          "cat *": "allow",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "node --test": "allow",
+          "npm test": "allow"
+        },
         "task": "deny"
       }
     },
@@ -434,9 +459,12 @@
       "description": "Stateless formatter for Prober. Produces security audit reports under docs/reports/.",
       "prompt": "{file:./prompts/probe-reporter.txt}",
       "permission": {
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
+        "read": {
+          "*": "deny",
+          "docs/reports/**": "allow"
+        },
+        "glob": "deny",
+        "grep": "deny",
         "edit": {
           "*": "deny",
           "docs/reports/**": "allow"

@@ -21,16 +21,16 @@ attribution, and one-line tool-invocation summaries, separated by
 ## `pluidr-squeeze.js` — command output filtering
 
 Implementation of the `PluidrSqueezePlugin`. Hooks into `tool.execute.before`
-to rewrite bash commands through the `rtk` binary. The binary filters,
-groups, truncates, and deduplicates command output — saving 60-90% of
-tokens across all agents.
+to rewrite bash commands through the local `squeeze` binary (built on the `rtk`
+engine). The binary filters, groups, truncates, and deduplicates command
+output — saving 60-90% of tokens across all agents.
 
-The plugin is a thin delegator: all rewrite logic lives in the `rtk` binary.
+The plugin is a thin delegator: all rewrite logic lives in the engine binary.
 It checks `PATH` first, then falls back to Pluidr's managed location at
-`~/.config/opencode/bin/rtk`. If the binary is not found, the plugin
+`~/.config/opencode/bin/squeeze`. If the binary is not found, the plugin
 gracefully disables itself with a warning.
 
-`pluidr init` downloads the `rtk` binary automatically during setup.
+`pluidr init` downloads the `squeeze` binary automatically during setup.
 
 ## Why `pluidr-flow` was extracted
 
@@ -61,8 +61,8 @@ agent in its pipeline, so the tool would have no caller — YAGNI.
 
 `pluidr init` copies both plugins into `~/.config/opencode/plugins/` and
 writes a `package.json` declaring `@opencode-ai/plugin: ^1.17.9` as a
-dependency. For `pluidr-squeeze`, it also downloads the `rtk` engine binary
-to `~/.config/opencode/bin/`. On OpenCode's first launch, the bundled Bun
-runtime detects the `package.json` and runs `bun install` automatically —
-no user action required. Once installed, both plugins are available to
-every agent that has the appropriate permissions.
+dependency. For `pluidr-squeeze`, it also downloads and extracts the `squeeze`
+engine binary to `~/.config/opencode/bin/`. On OpenCode's first launch, the
+bundled Bun runtime detects the `package.json` and runs `bun install`
+automatically — no user action required. Once installed, both plugins are
+available to every agent that has the appropriate permissions.

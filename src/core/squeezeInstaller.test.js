@@ -1,6 +1,6 @@
 import { describe, it } from "node:test"
 import assert from "node:assert"
-import { platformAsset, validatePath, findRtkPath, ASSETS } from "./squeezeInstaller.js"
+import { platformAsset, validatePath, findSqueezePath, ASSETS } from "./squeezeInstaller.js"
 
 describe("platformAsset", () => {
   it("returns a string or null for current platform", () => {
@@ -66,11 +66,9 @@ describe("validatePath", () => {
   })
 })
 
-describe("findRtkPath", () => {
-  it("returns null when rtk is not available on PATH", () => {
-    // This test is safe because if rtk IS on PATH, we still get a
-    // string back — but the test doesn't crash either way.
-    const result = findRtkPath()
+describe("findSqueezePath", () => {
+  it("returns null when squeeze is not available on PATH", () => {
+    const result = findSqueezePath()
     // Either null (not on PATH) or a non-empty string (found)
     assert.ok(result === null || typeof result === "string")
   })

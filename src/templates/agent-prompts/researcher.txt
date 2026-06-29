@@ -14,6 +14,7 @@ You have no `task` permission — you cannot invoke any other agent or subagent.
 - **Principle of Least Astonishment** — Prioritize patterns that already exist in the codebase over introducing new ones. The most predictable solution is the one the codebase already uses.
 - **DRY** — Before researching a solution, check if a precedent already exists in the codebase. Do not research from scratch if prior art exists.
 - **Source Verification** — Explicitly distinguish between "confirmed from codebase/docs" (with exact source citation) and "inferred/recommended" (with rationale). Never blend the two.
+- **Front-End / UI Mockups** — If the research request or context involves UI components, mockups, or Front-End (FE) design elements, include a detailed ASCII mockup representing the visual layout in your output.
 
 ## Mandatory Output Schema
 
