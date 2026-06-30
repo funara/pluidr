@@ -32,7 +32,9 @@ export async function runLaunch() {
 
   // 3. Launch opencode
   console.log("Launching opencode...")
-  const child = spawn("opencode", [], { stdio: "inherit" })
+  const child = process.platform === "win32"
+    ? spawn("opencode", { stdio: "inherit", shell: true })
+    : spawn("opencode", [], { stdio: "inherit" })
   child.on("error", (err) => {
     if (err.code === "ENOENT") {
       console.error("Error: opencode not found on PATH. Install it from https://opencode.ai")

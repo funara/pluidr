@@ -10,12 +10,12 @@ import { version } from "../core/version.js"
 
 const HELP = `Usage: pluidr [command]
 
-  pluidr              Check for updates, run doctor, launch opencode
-  pluidr init         Set up OpenCode with Pluidr's 17-agent pipeline
-  pluidr update       Check for pluidr updates
-  pluidr doctor       Verify installation health
-  pluidr uninstall    Remove Pluidr artifacts and restore previous config
-  --version, -v       Print version number
+  pluidr              Launch OpenCode powered by Pluidr agents
+  pluidr init         Install and configure the Pluidr agent pipeline
+  pluidr update       Check and update the Pluidr system
+  pluidr doctor       Diagnose the integrity of the current installation
+  pluidr uninstall    Remove Pluidr artifacts and restore the previous config
+  --version, -v       Print the current version number
   --help, -h          Show this help message`
 
 export function run(argv) {

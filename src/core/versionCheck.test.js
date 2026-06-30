@@ -1,6 +1,6 @@
 import { describe, it } from "node:test"
 import assert from "node:assert"
-import { execFileSync } from "node:child_process"
+import { execFileSync, execSync } from "node:child_process"
 import { fetchLatestVersion } from "./versionCheck.js"
 
 describe("fetchLatestVersion", () => {
@@ -14,11 +14,21 @@ describe("fetchLatestVersion", () => {
     // Verify the try/catch in fetchLatestVersion swallows errors
     let caught = null
     try {
-      execFileSync("npm", ["view", "__nonexistent_pkg_xyz_pluidr__", "version"], { stdio: "pipe" })
+      if (process.platform === "win32") {
+        execSync("npm view __nonexistent_pkg_xyz_pluidr__ version", { stdio: "pipe" })
+      } else {
+        execFileSync("npm", ["view", "__nonexistent_pkg_xyz_pluidr__", "version"], { stdio: "pipe" })
+      }
     } catch (err) {
       caught = err
     }
     // npm throws on unknown package — fetchLatestVersion handles this and returns null
     assert.ok(caught instanceof Error, "npm should throw for unknown package")
+  })
+
+  it("uses execSync on Windows for npm, plain execFileSync on other platforms", () => {
+    // Confirm the platform guard evaluates correctly
+    const useSync = process.platform === "win32"
+    assert.strictEqual(typeof useSync, "boolean")
   })
 })

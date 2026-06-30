@@ -1,6 +1,12 @@
 import { describe, it } from "node:test"
 import assert from "node:assert"
-import { resolveRewritten, shellQuote, PluidrSqueezePlugin } from "../../src/plugins/pluidr-squeeze.js"
+import { existsSync } from "node:fs"
+import { homedir } from "node:os"
+import { join } from "node:path"
+import { resolveRewritten, shellQuote, PluidrSqueezePlugin } from "../src/plugins/pluidr-squeeze.js"
+
+const squeezeBin = join(homedir(), ".config", "opencode", "bin", process.platform === "win32" ? "squeeze.exe" : "squeeze")
+const squeezeInstalled = existsSync(squeezeBin)
 
 describe("resolveRewritten", () => {
   // --- squeeze on PATH (binPath === "squeeze") ---
@@ -99,7 +105,7 @@ describe("PluidrSqueezePlugin", () => {
     return fn
   }
 
-  it("gracefully disables plugin if findBinary fails", async () => {
+  it("gracefully disables plugin if findBinary fails", { skip: squeezeInstalled ? "squeeze binary present locally — fallback path activates" : false }, async () => {
     // mock shell throws on "where squeeze" / "which squeeze"
     const mock$ = mockShell("", true)
     const plugin = await PluidrSqueezePlugin({ $: mock$ })

@@ -1,8 +1,13 @@
-import { execFileSync } from "node:child_process"
+import { execFileSync, execSync } from "node:child_process"
 import { confirm, isCancel } from "@clack/prompts"
 
 export function fetchLatestVersion() {
   try {
+    if (process.platform === "win32") {
+      return execSync("npm view pluidr version", { stdio: "pipe" })
+        .toString()
+        .trim()
+    }
     return execFileSync("npm", ["view", "pluidr", "version"], { stdio: "pipe" })
       .toString()
       .trim()
@@ -30,6 +35,10 @@ export async function checkAndPromptUpdate(currentVersion) {
   const answer = await confirm({ message: "Update now?", initialValue: true })
   if (isCancel(answer) || !answer) return false
 
-  execFileSync("npm", ["install", "-g", "pluidr"], { stdio: "inherit" })
+  if (process.platform === "win32") {
+    execSync("npm install -g pluidr", { stdio: "inherit" })
+  } else {
+    execFileSync("npm", ["install", "-g", "pluidr"], { stdio: "inherit" })
+  }
   return true
 }
