@@ -5,22 +5,25 @@ import { runInit } from "./commands/init.js"
 import { runUninstall } from "./commands/uninstall.js"
 import { runUpdate } from "./commands/update.js"
 import { runDoctor } from "./commands/doctor.js"
+import { runLaunch } from "./commands/launch.js"
+import { version } from "../core/version.js"
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const pkg = JSON.parse(readFileSync(resolve(__dirname, "../../package.json"), "utf-8"))
+const HELP = `Usage: pluidr [command]
 
-const HELP = `Usage: pluidr <command>
-
-Commands:
-  init          Set up OpenCode with Pluidr's 17-agent pipeline
-  uninstall     Remove Pluidr artifacts and restore previous config
-  update        Re-run setup (overwrites current config)
-  doctor        Verify installation health
-  --version, -v  Print version number
-  --help, -h     Show this help message`
+  pluidr              Check for updates, run doctor, launch opencode
+  pluidr init         Set up OpenCode with Pluidr's 17-agent pipeline
+  pluidr update       Check for pluidr updates
+  pluidr doctor       Verify installation health
+  pluidr uninstall    Remove Pluidr artifacts and restore previous config
+  --version, -v       Print version number
+  --help, -h          Show this help message`
 
 export function run(argv) {
   const cmd = argv[2]
+
+  if (!cmd) {
+    return runLaunch()
+  }
 
   if (cmd === "--help" || cmd === "-h") {
     console.log(HELP)
@@ -28,7 +31,7 @@ export function run(argv) {
   }
 
   if (cmd === "--version" || cmd === "-v") {
-    console.log(pkg.version)
+    console.log(version)
     return
   }
 
@@ -48,6 +51,7 @@ export function run(argv) {
     return runDoctor()
   }
 
+  console.error(`Unknown command: ${cmd}\n`)
   console.log(HELP)
   process.exit(1)
 }

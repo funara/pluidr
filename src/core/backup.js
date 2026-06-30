@@ -20,7 +20,9 @@ function rotateBackups(configPath) {
       .filter((f) => f.startsWith(baseName + "."))
       .map((f) => join(dir, f))
       .sort()
-  } catch { /* dir doesn't exist yet */ }
+  } catch (err) {
+    if (err.code !== "ENOENT") throw err
+  }
 
   while (backups.length >= MAX_BACKUPS) {
     const oldest = backups.shift()

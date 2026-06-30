@@ -301,6 +301,14 @@ npx pluidr init
 
 ## Usage
 
+### `pluidr`
+
+The everyday command. Runs three steps in sequence:
+
+1. **Update check** — compares local version against npm registry; prompts to `npm install -g pluidr` if a new version is available
+2. **Doctor check** — verifies installation health; prompts to repair with `pluidr init` if any checks fail
+3. **Launch** — spawns `opencode`
+
 ### `pluidr init`
 
 Prompts you to select models for three agent tiers (reasoning, precision, and fast), then:
@@ -328,7 +336,7 @@ Exits with code `0` if all pass, `1` if any fail.
 
 ### `pluidr update`
 
-Re-runs the setup wizard. Warns if existing config is found and asks for confirmation before overwriting.
+Checks the npm registry for a newer version of pluidr and prompts to install it.
 
 ### `pluidr uninstall`
 

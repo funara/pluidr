@@ -1,15 +1,12 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs"
-import { join, dirname } from "node:path"
-import { fileURLToPath } from "node:url"
-import { execFileSync } from "node:child_process"
+import { join } from "node:path"
 import { getConfigDir, getConfigPath, getPromptsDir } from "../../core/paths.js"
 import { findSqueezePath } from "../../core/squeezeInstaller.js"
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
 const EXPECTED_PROMPT_COUNT = 18
 const PLUGIN_FILES = ["pluidr-flow.js", "pluidr-squeeze.js"]
 
-export async function runDoctor() {
+export function collectChecks() {
   const configDir = getConfigDir()
   const configPath = getConfigPath()
   const promptsDir = getPromptsDir()
@@ -79,8 +76,13 @@ export async function runDoctor() {
   }
   checks.push({ component: "config JSON validity", pass: configValid })
 
-  // Print summary table
+  return checks
+}
+
+export async function runDoctor() {
+  const checks = collectChecks()
   const allPass = checks.every((c) => c.pass)
+
   console.log("\nPluidr Doctor — Installation Health Check\n")
   for (const c of checks) {
     const icon = c.pass ? "\u2713" : "\u2717"

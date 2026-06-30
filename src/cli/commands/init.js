@@ -25,7 +25,7 @@ export async function runInit() {
     initialValue: true,
   })
 
-  const installSqueezePlugin = isCancel(squeezeAnswer) ? true : squeezeAnswer
+  const installSqueezePlugin = isCancel(squeezeAnswer) ? false : squeezeAnswer
 
   backupExistingConfig()
 

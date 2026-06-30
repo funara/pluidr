@@ -1,5 +1,5 @@
 import { existsSync, copyFileSync, rmSync, readdirSync } from "node:fs"
-import { join, dirname } from "node:path"
+import { join } from "node:path"
 import { getConfigDir, getConfigPath } from "../../core/paths.js"
 
 function findLatestBackup() {
@@ -27,11 +27,7 @@ export async function runUninstall() {
 
   // Restore latest backup
   const latestBackup = findLatestBackup()
-  if (latestBackup && existsSync(configPath)) {
-    copyFileSync(latestBackup, configPath)
-    summary.restored = latestBackup
-  } else if (latestBackup) {
-    // Config doesn't exist but backup does — restore anyway
+  if (latestBackup) {
     copyFileSync(latestBackup, configPath)
     summary.restored = latestBackup
   }

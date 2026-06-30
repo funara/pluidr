@@ -52,4 +52,42 @@ describe("configBuilder", () => {
 
     rmSync(tmpDir, { recursive: true })
   })
+
+  it("throws an error if a defaulted agent is missing from config template", () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), "configbuilder-test-err-"))
+
+    const configJson = {
+      agent: {
+        // missing 'composer'
+        coder: {},
+      },
+    }
+    const defaultsJson = {
+      reasoning: {
+        provider: "test",
+        model: "big-model",
+        agents: ["composer"],
+      },
+      fast: {
+        provider: "test",
+        model: "small-model",
+        agents: ["coder"],
+      },
+    }
+
+    writeFileSync(join(tmpDir, "opencode.config.json"), JSON.stringify(configJson), "utf-8")
+    writeFileSync(join(tmpDir, "model-defaults.json"), JSON.stringify(defaultsJson), "utf-8")
+
+    assert.throws(() => {
+      buildConfig(
+        {
+          reasoning: "test/big-model",
+          fast: "test/small-model",
+        },
+        tmpDir,
+      )
+    }, /Template validation failed: agent\(s\) not found/)
+
+    rmSync(tmpDir, { recursive: true })
+  })
 })
