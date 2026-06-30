@@ -12,14 +12,20 @@ describe("configBuilder", () => {
     const configJson = {
       agent: {
         composer: {},
+        reviewer: {},
         coder: {},
       },
     }
     const defaultsJson = {
-      reasoningHeavy: {
+      reasoning: {
         provider: "test",
         model: "big-model",
         agents: ["composer"],
+      },
+      precision: {
+        provider: "test",
+        model: "mid-model",
+        agents: ["reviewer"],
       },
       fast: {
         provider: "test",
@@ -33,13 +39,15 @@ describe("configBuilder", () => {
 
     const result = buildConfig(
       {
-        reasoningHeavy: "test/big-model",
+        reasoning: "test/big-model",
+        precision: "test/mid-model",
         fast: "test/small-model",
       },
       tmpDir,
     )
 
     assert.strictEqual(result.agent.composer.model, "test/big-model")
+    assert.strictEqual(result.agent.reviewer.model, "test/mid-model")
     assert.strictEqual(result.agent.coder.model, "test/small-model")
 
     rmSync(tmpDir, { recursive: true })

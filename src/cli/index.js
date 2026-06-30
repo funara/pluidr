@@ -12,7 +12,7 @@ const pkg = JSON.parse(readFileSync(resolve(__dirname, "../../package.json"), "u
 const HELP = `Usage: pluidr <command>
 
 Commands:
-  init          Set up OpenCode with Pluidr's 12-agent pipeline
+  init          Set up OpenCode with Pluidr's 17-agent pipeline
   uninstall     Remove Pluidr artifacts and restore previous config
   update        Re-run setup (overwrites current config)
   doctor        Verify installation health

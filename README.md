@@ -10,13 +10,13 @@
 
 ## What is Pluidr?
 
-Pluidr installs a **17-agent pipeline** into OpenCode — structured around **3 primary agents**, each with their own exclusive subagents, scoped permissions, and enforced workflow rules. No shared subagents. No ad-hoc delegation.
+Pluidr installs **3 primary agents + 14 subagents** into OpenCode — each primary agent owns its exclusive subagents, scoped permissions, and enforced workflow rules. No shared subagents. No ad-hoc delegation.
 
-| Primary Agent | Purpose | Subagents |
-|---|---|---|
-| **Composer** | Feature work — Explore → Plan → Build | Researcher, Plan-Writer, Plan-Checker, Coder, Tester, Reviewer, Compose-Reporter |
-| **Debugger** | Bug investigation — Investigate → Fix → Report | Inspector, Fixer, Debug-Reporter |
-| **Prober** | Security audit — Trace → Patch → Audit | Tracer, Patcher, Auditor, Probe-Reporter |
+| Primary Agent | Model Tier | Purpose | Subagents |
+|---|---|---|---|
+| **Composer** | 🧠 Reasoning | Feature work — Explore → Plan → Build | Researcher, Plan-Writer, Plan-Checker, Coder, Tester, Reviewer, Compose-Reporter |
+| **Debugger** | 🧠 Reasoning | Bug investigation — Investigate → Fix → Report | Inspector, Fixer, Debug-Reporter |
+| **Prober** | 🧠 Reasoning | Security audit — Trace → Patch → Audit | Tracer, Patcher, Auditor, Probe-Reporter |
 
 ---
 
@@ -231,22 +231,22 @@ You trigger a security audit
 
 Each subagent belongs to exactly one primary agent and cannot be invoked by anyone else:
 
-| Primary | Phase | Subagent | Role |
-|---------|-------|----------|------|
-| Composer | EXPLORE | Researcher | Fact-finding: confirmed_facts / inferred_facts / unknowns / risks |
-| Composer | PLAN | Plan-Writer | **Formatter** — writes PRD to `docs/plans/`, missing input = TBD |
-| Composer | PLAN | Plan-Checker | **Gate** — PASS/FAIL + gap list only, no suggestions |
-| Composer | BUILD | Coder | Implements code from PRD |
-| Composer | BUILD | Tester | PASS/FAIL/BLOCKED + coverage gaps only |
-| Composer | BUILD | Reviewer | **Gate** — PASS/FAIL + gap list only, no suggestions |
-| Composer | BUILD | Compose-Reporter | **Formatter** — completion report to `docs/reports/` |
-| Debugger | DEBUG | Inspector | Brooks-Lint RCA (Iron Law + 6 decay risks + 4 review modes) |
-| Debugger | DEBUG | Fixer | Minimal, root-cause-targeted fix |
-| Debugger | DEBUG | Debug-Reporter | **Formatter** — Iron Law diagnosis report to `docs/reports/` |
-| Prober | TRACE | Tracer | WSTG recon + vuln path tracing, no remedies |
-| Prober | PATCH | Patcher | Minimal, security-targeted fix (Ponytail, max 10 lines) |
-| Prober | AUDIT | Auditor | **Gate** — PASS/FAIL + Gap List + BLOAT List only |
-| Prober | AUDIT | Probe-Reporter | **Formatter** — security audit report to `docs/reports/` |
+| Primary | Phase | Subagent | Model Tier | Role |
+|---------|-------|----------|------------|------|
+| Composer | EXPLORE | Researcher | 🧠 Reasoning | Fact-finding: confirmed_facts / inferred_facts / unknowns / risks |
+| Composer | PLAN | Plan-Writer | ⚡ Fast | **Formatter** — writes PRD to `docs/plans/`, missing input = TBD |
+| Composer | PLAN | Plan-Checker | 🧠 Reasoning | **Gate** — PASS/FAIL + gap list only, no suggestions |
+| Composer | BUILD | Coder | ⚡ Fast | Implements code from PRD |
+| Composer | BUILD | Tester | 🎯 Precision | PASS/FAIL/BLOCKED + coverage gaps only |
+| Composer | BUILD | Reviewer | 🎯 Precision | **Gate** — PASS/FAIL + gap list only, no suggestions |
+| Composer | BUILD | Compose-Reporter | ⚡ Fast | **Formatter** — completion report to `docs/reports/` |
+| Debugger | INVESTIGATE | Inspector | 🧠 Reasoning | Brooks-Lint RCA (Iron Law + 6 decay risks + 4 review modes) |
+| Debugger | FIX | Fixer | ⚡ Fast | Minimal, root-cause-targeted fix |
+| Debugger | REPORT | Debug-Reporter | ⚡ Fast | **Formatter** — Iron Law diagnosis report to `docs/reports/` |
+| Prober | TRACE | Tracer | 🎯 Precision | WSTG recon + vuln path tracing, no remedies |
+| Prober | PATCH | Patcher | ⚡ Fast | Minimal, security-targeted fix (Ponytail, max 10 lines) |
+| Prober | AUDIT | Auditor | 🎯 Precision | **Gate** — PASS/FAIL + Gap List + BLOAT List only |
+| Prober | AUDIT | Probe-Reporter | ⚡ Fast | **Formatter** — security audit report to `docs/reports/` |
 
 ---
 
@@ -303,7 +303,7 @@ npx pluidr init
 
 ### `pluidr init`
 
-Prompts you to select models for two agent tiers (reasoning-heavy and fast), then:
+Prompts you to select models for three agent tiers (reasoning, precision, and fast), then:
 
 - Asks whether to install the pluidr-squeeze plugin (can decline)
 - Builds a complete `opencode.jsonc` config with the chosen models injected into the right agents

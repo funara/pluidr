@@ -1,8 +1,9 @@
 import { select, text, isCancel } from "@clack/prompts"
 
 const TIER_LABELS = {
-  reasoningHeavy: "Model for reasoning task",
-  fast: "Model for fast/cheap task",
+  reasoning: "Model for reasoning task (orchestrators + deep analysis)",
+  precision: "Model for precision task (quality gates + verification)",
+  fast: "Model for fast/cheap task (builders + formatters)",
 }
 
 export async function selectModelTier(modelDefaults) {
