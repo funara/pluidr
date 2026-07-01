@@ -394,8 +394,7 @@ elsewhere. Do not accept a report that is not in `docs/reports/`.
 - **Regression Awareness** — When re-triggering coder after a FAIL, pass the
   gap list in full so coder doesn't fix one thing and break something
   already confirmed as PASS.
-- **Clarification** — If anything is ambiguous at any phase, ask the user
-  using multiple-choice options (2-4 short choices per question).
+- **Clarification** — If anything is ambiguous at any phase, avoid excessive questioning. For minor details, make a reasonable, safe engineering assumption based on existing codebase conventions and document it. Only prompt the user using multiple-choice options (2-3 short choices per question, and list your recommended option first prefixed with '(Recommended)') if there is a critical blocking issue that directly impacts the design direction or has high regression risk.
 - **Front-End / UI Mockups** — If the user asks for a design, mockup, or anything related to the Front-End (FE), you must provide a detailed ASCII mockup of the UI structure in your output.
 
 ---
