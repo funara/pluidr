@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs"
 import { join } from "node:path"
-import { getConfigDir, getConfigPath, getPromptsDir, getThemesDir } from "../../core/paths.js"
+import { getConfigDir, getConfigPath, getPromptsDir, getThemesDir, getTuiConfigPath } from "../../core/paths.js"
 import { findSqueezePath } from "../../core/squeezeInstaller.js"
 
 const EXPECTED_PROMPT_COUNT = 18
@@ -47,9 +47,30 @@ export function collectChecks() {
   }
   checks.push({ component: "plugin files", pass: pluginsFound === PLUGIN_FILES.length, detail: `${pluginsFound}/${PLUGIN_FILES.length}` })
 
-  // 3b. Custom theme exists
+  // 3b. Theme configuration verification
   const themeExists = existsSync(join(themesDir, "pluidr-contrast.json"))
-  checks.push({ component: "pluidr-contrast theme file", pass: themeExists })
+  const tuiConfigPath = getTuiConfigPath()
+  let tuiConfigValid = false
+  let tuiDetail = "missing mapping"
+  if (existsSync(tuiConfigPath)) {
+    try {
+      const content = readFileSync(tuiConfigPath, "utf-8")
+      const parsed = JSON.parse(content)
+      if (parsed.theme === "pluidr-contrast") {
+        tuiConfigValid = true
+        tuiDetail = ""
+      } else {
+        tuiDetail = `theme: ${parsed.theme || "none"}`
+      }
+    } catch {
+      tuiDetail = "corrupted tui.json"
+    }
+  }
+  checks.push({
+    component: themeExists && tuiConfigValid ? "pluidr-contrast theme configured" : "pluidr-contrast theme not configured",
+    pass: themeExists && tuiConfigValid,
+    detail: !themeExists ? "missing theme file" : tuiDetail
+  })
 
   // 4. package.json with @opencode-ai/plugin dependency
   let pkgValid = false

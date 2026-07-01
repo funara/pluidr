@@ -321,7 +321,7 @@ Checks installation health and reports ✓/✗ for each component:
 - `opencode.jsonc` exists
 - All 18 prompt files present
 - Both plugin files present
-- `pluidr-contrast` theme file present
+- `pluidr-contrast` theme configured
 - `package.json` with `@opencode-ai/plugin` dependency
 - squeeze binary available
 - Config is valid JSON
@@ -330,7 +330,7 @@ Exits with code `0` if all pass, `1` if any fail.
 
 ### `pluidr update`
 
-Checks the npm registry for a newer version of pluidr and prompts to install it.
+Checks the npm registry for a newer version of pluidr and prompts to automatically install the upgrade globally. If an update is successfully completed, the running CLI process exits to let you start fresh on the new version.
 
 ### `pluidr uninstall`
 

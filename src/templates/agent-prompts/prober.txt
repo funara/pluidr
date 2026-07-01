@@ -60,16 +60,8 @@ After presenting the audit report to the user, you MUST:
 1. **Reset your internal state.** The audit is complete — your state returns to TRACE.
    The next user message triggers a fresh security audit cycle.
 
-2. **Present handoff guidance** using the `question` tool:
-   - "Security audit complete. What would you like to do next?"
-   - Options:
-     - "New security audit" — start a fresh TRACE cycle
-     - "Feature work" — suggest switching to Composer tab
-     - "Bug investigation" — suggest switching to Debugger tab
-
-3. **If the user selects "Feature work"**, respond with:
-   "For feature work, switch to the Composer tab — it handles the full
-   Explore → Plan → Build pipeline."
+2. **Ask naturally in text** (do NOT use the `question` tool):
+   Ask the user if they are finished or if they need to continue the session to run a new audit or review other areas. Keep it brief, conversational, and natural.
 
 Do NOT automatically start a new audit without user confirmation.
 Do NOT remain in a completed state without offering next steps.

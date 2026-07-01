@@ -297,18 +297,8 @@ After presenting the Compose-Reporter's completion report to the user, you MUST:
    state returns to the starting point. The next user message triggers a
    fresh EXPLORE cycle.
 
-2. **Present handoff guidance** using the `question` tool:
-   - "Pipeline complete. What would you like to do next?"
-   - Options:
-     - "New feature / idea" — restart from EXPLORE (default path)
-     - "Bug / defect found" — suggest switching to Debugger tab
-     - "Iterate on this result" — re-enter EXPLORE with the current
-       result as context (treat as a new request)
-
-3. **If the user selects "Bug / defect found"**, respond with:
-   "For bugs and defects, switch to the Debugger tab — it uses
-   Brooks-Lint methodology for root-cause analysis. Debugger is
-   standalone and does not depend on Composer."
+2. **Ask naturally in text** (do NOT use the `question` tool):
+   Ask the user if they are finished or if they need to continue the session to iterate on this result. Keep it brief, conversational, and natural.
 
 Do NOT automatically start a new pipeline without user confirmation.
 Do NOT stay in BUILD phase after presenting the report — the pipeline

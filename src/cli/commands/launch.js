@@ -7,7 +7,11 @@ import { runInit } from "./init.js"
 
 export async function runLaunch() {
   // 1. Update check
-  await checkAndPromptUpdate(version)
+  const updated = await checkAndPromptUpdate(version)
+  if (updated) {
+    console.log("Update successful. Please run pluidr again to start the new version.")
+    process.exit(0)
+  }
 
   // 2. Doctor check
   process.stdout.write("Running doctor...         ")

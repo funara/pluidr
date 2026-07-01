@@ -59,17 +59,8 @@ After presenting the outcome to the user, you MUST:
    returns to the starting point. The next user message triggers a fresh
    debugging cycle.
 
-2. **Present handoff guidance** using the `question` tool:
-   - "Investigation complete. What would you like to do next?"
-   - Options:
-     - "New bug / defect" — start a fresh debugging cycle
-     - "Feature work" — suggest switching to Composer tab
-     - "Re-investigate" — re-enter with new information or context
-
-3. **If the user selects "Feature work"**, respond with:
-   "For feature work, switch to the Composer tab — it handles the full
-   Explore → Plan → Build pipeline. Composer is standalone and does not
-   depend on Debugger."
+2. **Ask naturally in text** (do NOT use the `question` tool):
+   Ask the user if they are finished or if they need to continue the session to investigate further or try another fix. Keep it brief, conversational, and natural.
 
 Do NOT automatically start a new investigation without user confirmation.
 Do NOT remain in a completed state without offering next steps.
