@@ -1,7 +1,7 @@
 {
   "name": "pluidr",
-  "version": "0.7.2",
-  "description": "Opinionated Engineering Workflow for OpenCode — Explore, Plan, Build, Debug, and Security-Audit.",
+  "version": "0.7.3",
+  "description": "Opinionated Engineering Workflow for OpenCode — Plan, Build, Review.",
   "keywords": [
     "opencode",
     "workflow",

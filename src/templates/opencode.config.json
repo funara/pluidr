@@ -25,6 +25,7 @@
 
     "composer": {
       "mode": "primary",
+      "color": "#00b4cc",
       "temperature": 0.7,
       "description": "Full engineering workflow: Explore, Plan, Build — 3 phases, 7 subagents. Starts in Explore mode, transitions via guardrail gates.",
       "prompt": "{file:./prompts/composer.txt}",
@@ -55,6 +56,7 @@
 
     "debugger": {
       "mode": "primary",
+      "color": "#ff7039",
       "description": "Root-cause analysis via inspector/fixer/reporter. Standalone primary agent — does not depend on Composer. Pure orchestrator — all investigation, fixes, and reports delegated to subagents.",
       "prompt": "{file:./prompts/debugger.txt}",
       "permission": {
@@ -345,6 +347,7 @@
 
     "prober": {
       "mode": "primary",
+      "color": "#66ffbf",
       "temperature": 0.7,
       "description": "Standalone security and quality auditing agent. Recon and vuln trace, minimal patch application, validation gate.",
       "prompt": "{file:./prompts/prober.txt}",

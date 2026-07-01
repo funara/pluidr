@@ -12,11 +12,11 @@
 
 Pluidr installs **3 primary agents + 14 subagents** into OpenCode — each primary agent owns its exclusive subagents, scoped permissions, and enforced workflow rules. No shared subagents. No ad-hoc delegation.
 
-| Primary Agent | Model Tier | Purpose | Subagents |
-|---|---|---|---|
-| **Composer** | 🧠 Reasoning | Feature work — Explore → Plan → Build | Researcher, Plan-Writer, Plan-Checker, Coder, Tester, Reviewer, Compose-Reporter |
-| **Debugger** | 🧠 Reasoning | Bug investigation — Investigate → Fix → Report | Inspector, Fixer, Debug-Reporter |
-| **Prober** | 🧠 Reasoning | Security audit — Trace → Patch → Audit | Tracer, Patcher, Auditor, Probe-Reporter |
+| Primary Agent | Purpose | Subagents |
+|---|---|---|
+| **Composer** | Feature work — Explore → Plan → Build | Researcher, Plan-Writer, Plan-Checker, Coder, Tester, Reviewer, Compose-Reporter |
+| **Debugger** | Bug investigation — Investigate → Fix → Report | Inspector, Fixer, Debug-Reporter |
+| **Prober** | Security audit — Trace → Patch → Audit | Tracer, Patcher, Auditor, Probe-Reporter |
 
 ---
 
@@ -35,21 +35,20 @@ You describe a feature / idea
   │                                         │
   │  Delegate: Researcher                   │
   │  → deep codebase + web fact-finding     │
-  │  → confirmed_facts / inferred_facts /   │
-  │    unknowns / risks                     │
+  │  → confirmed-inferred facts / risks     │
   │                                         │
   │  Composer internally assesses:          │
   │  Is this feature simple or complex?     │
   └──────────┬──────────────────────────────┘
              │
-    ┌────────┴────────┐
-    │ Simple feature  │  Complex feature
-    ▼                 ▼
-GUARDRAIL GATE 1a  GUARDRAIL GATE 1b
-"Build directly?"  "Write a PRD?"
-    │                 │
-    │ Yes             │ Yes
-    │                 ▼
+    ┌────────┴───────────────┐
+    │ Simple feature         │  Complex feature
+    ▼                       ▼
+GUARDRAIL GATE 1a      GUARDRAIL GATE 1b
+"Build directly?"        "Write a PRD?"
+    │                        │
+    │ Yes                    │ Yes
+    │                        ▼
     │          ┌──────────────────────────────┐
     │          │  PLAN PHASE                  │
     │          │                              │
@@ -62,9 +61,9 @@ GUARDRAIL GATE 1a  GUARDRAIL GATE 1b
     │          │                              │
     │          │  PASS → GUARDRAIL GATE 2     │
     │          │  "Build from this PRD?"      │
-    │          └──────────┬───────────────────┘
-    │                     │ Yes
-    └──────────┬──────────┘
+    │          └─────────────┬────────────────┘
+    │                        │ Yes
+    └──────────┬─────────────┘
                ▼
   ┌────────────────────────────────────────────┐
   │  BUILD PHASE                               │
@@ -293,12 +292,6 @@ All agents resolve conflicts using this priority order (defined in `hierarchy.tx
 npm install -g pluidr
 ```
 
-Or run directly without installing:
-
-```sh
-npx pluidr init
-```
-
 ## Usage
 
 ### `pluidr`
@@ -328,6 +321,7 @@ Checks installation health and reports ✓/✗ for each component:
 - `opencode.jsonc` exists
 - All 18 prompt files present
 - Both plugin files present
+- `pluidr-contrast` theme file present
 - `package.json` with `@opencode-ai/plugin` dependency
 - squeeze binary available
 - Config is valid JSON
@@ -343,12 +337,13 @@ Checks the npm registry for a newer version of pluidr and prompts to install it.
 Restores your previous configuration:
 
 - Finds the latest timestamped backup and restores it to `opencode.jsonc`
-- Removes `prompts/`, `plugins/`, and `bin/` directories
+- Restores `tui.json` from the latest backup (returning the TUI theme to its pre-Pluidr state)
+- Removes `prompts/`, `plugins/`, `bin/`, and `themes/pluidr-contrast.json` directories and files
 - Preserves `opencode.jsonc` and `package.json`
 
 ---
 
-## Bundled Plugins
+## Bundled Package
 
 ### `pluidr-flow`
 
@@ -363,3 +358,7 @@ Provides subagents with cross-session context access:
 Hooks into tool execution to rewrite bash commands through the `squeeze` binary, filtering verbose output and saving **60–90% of tokens** across all agents.
 
 Both plugins and their dependency declaration are installed automatically by `pluidr init` — no extra user action required. On OpenCode's first launch, the bundled Bun runtime installs `@opencode-ai/plugin` from the generated `package.json`.
+
+### Themes & Colors
+
+Pluidr comes with a pre-configured OLED high-contrast dark theme called **`pluidr-contrast`** that is automatically applied to your OpenCode terminal interface.
