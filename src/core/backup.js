@@ -1,6 +1,6 @@
 import { existsSync, copyFileSync, readdirSync, unlinkSync } from "node:fs"
 import { join, dirname } from "node:path"
-import { getConfigPath } from "./paths.js"
+import { getConfigPath, getTuiConfigPath } from "./paths.js"
 
 const MAX_BACKUPS = 5
 
@@ -32,9 +32,15 @@ function rotateBackups(configPath) {
 
 export function backupExistingConfig(configPath) {
   const resolvedPath = configPath || getConfigPath()
-  if (!existsSync(resolvedPath)) return
+  if (existsSync(resolvedPath)) {
+    rotateBackups(resolvedPath)
+    const backupPath = `${resolvedPath}.bak.${timestamp()}`
+    copyFileSync(resolvedPath, backupPath)
+  }
 
-  rotateBackups(resolvedPath)
-  const backupPath = `${resolvedPath}.bak.${timestamp()}`
-  copyFileSync(resolvedPath, backupPath)
+  const tuiPath = getTuiConfigPath()
+  if (existsSync(tuiPath)) {
+    const backupTuiPath = `${tuiPath}.bak.${timestamp()}`
+    copyFileSync(tuiPath, backupTuiPath)
+  }
 }

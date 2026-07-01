@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs"
 import { join } from "node:path"
-import { getConfigDir, getConfigPath, getPromptsDir } from "../../core/paths.js"
+import { getConfigDir, getConfigPath, getPromptsDir, getThemesDir } from "../../core/paths.js"
 import { findSqueezePath } from "../../core/squeezeInstaller.js"
 
 const EXPECTED_PROMPT_COUNT = 18
@@ -20,6 +20,7 @@ export function collectChecks() {
   const pluginsDir = join(configDir, "plugins")
   const packageJsonPath = join(configDir, "package.json")
   const binDir = join(configDir, "bin")
+  const themesDir = getThemesDir()
 
   const checks = []
 
@@ -45,6 +46,10 @@ export function collectChecks() {
     if (existsSync(join(pluginsDir, f))) pluginsFound++
   }
   checks.push({ component: "plugin files", pass: pluginsFound === PLUGIN_FILES.length, detail: `${pluginsFound}/${PLUGIN_FILES.length}` })
+
+  // 3b. Custom theme exists
+  const themeExists = existsSync(join(themesDir, "pluidr-contrast.json"))
+  checks.push({ component: "pluidr-contrast theme file", pass: themeExists })
 
   // 4. package.json with @opencode-ai/plugin dependency
   let pkgValid = false

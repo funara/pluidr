@@ -8,6 +8,8 @@ import { buildConfig } from "../../core/configBuilder.js"
 import { writeConfig } from "../../core/configWriter.js"
 import { writeAgentPrompts } from "../../core/agentPromptWriter.js"
 import { writePluginBundle, writePluginPackageJson } from "../../core/pluginWriter.js"
+import { writeThemes } from "../../core/themeWriter.js"
+import { writeTuiConfig } from "../../core/tuiConfigWriter.js"
 import { installSqueeze } from "../../core/squeezeInstaller.js"
 import { getConfigPath } from "../../core/paths.js"
 
@@ -32,6 +34,8 @@ export async function runInit() {
   const configObject = buildConfig(tierChoices, TEMPLATES_DIR)
   writeConfig(configObject)
   writeAgentPrompts(TEMPLATES_DIR)
+  writeThemes(TEMPLATES_DIR)
+  writeTuiConfig("pluidr-contrast")
   writePluginBundle()
   writePluginPackageJson()
   if (installSqueezePlugin) {

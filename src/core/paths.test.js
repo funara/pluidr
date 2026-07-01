@@ -2,7 +2,7 @@ import { describe, it } from "node:test"
 import assert from "node:assert"
 import { homedir } from "node:os"
 import { join } from "node:path"
-import { getConfigDir, getConfigPath, getPromptsDir } from "./paths.js"
+import { getConfigDir, getConfigPath, getTuiConfigPath, getPromptsDir, getThemesDir } from "./paths.js"
 
 const BASE = join(homedir(), ".config", "opencode")
 
@@ -15,7 +15,15 @@ describe("paths", () => {
     assert.strictEqual(getConfigPath(), join(BASE, "opencode.jsonc"))
   })
 
+  it("getTuiConfigPath returns tui.json path", () => {
+    assert.strictEqual(getTuiConfigPath(), join(BASE, "tui.json"))
+  })
+
   it("getPromptsDir returns prompts path", () => {
     assert.strictEqual(getPromptsDir(), join(BASE, "prompts"))
+  })
+
+  it("getThemesDir returns themes path", () => {
+    assert.strictEqual(getThemesDir(), join(BASE, "themes"))
   })
 })

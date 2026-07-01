@@ -16,6 +16,20 @@ function findLatestBackup() {
   return backups.length > 0 ? join(dir, backups[0]) : null
 }
 
+function findLatestTuiBackup() {
+  const dir = getConfigDir()
+  let backups = []
+  try {
+    backups = readdirSync(dir)
+      .filter((f) => f.startsWith("tui.json.bak."))
+      .sort()
+      .reverse()
+  } catch {
+    return null
+  }
+  return backups.length > 0 ? join(dir, backups[0]) : null
+}
+
 export async function runUninstall() {
   const configDir = getConfigDir()
   const configPath = getConfigPath()
@@ -32,6 +46,14 @@ export async function runUninstall() {
     summary.restored = latestBackup
   }
 
+  const latestTuiBackup = findLatestTuiBackup()
+  const tuiConfigPath = join(configDir, "tui.json")
+  if (latestTuiBackup) {
+    copyFileSync(latestTuiBackup, tuiConfigPath)
+  }
+
+  const themesDir = join(configDir, "themes")
+
   // Remove Pluidr-installed artifacts
   if (existsSync(promptsDir)) {
     rmSync(promptsDir, { recursive: true, force: true })
@@ -44,6 +66,11 @@ export async function runUninstall() {
   if (existsSync(binDir)) {
     rmSync(binDir, { recursive: true, force: true })
     summary.removed.push("bin/")
+  }
+  const customThemePath = join(themesDir, "pluidr-contrast.json")
+  if (existsSync(customThemePath)) {
+    rmSync(customThemePath, { force: true })
+    summary.removed.push("themes/pluidr-contrast.json")
   }
 
   // Print summary
