@@ -41,6 +41,10 @@ describe("validatePath", () => {
     assert.doesNotThrow(() => validatePath("C:\\Users\\test"))
   })
 
+  it("accepts paths with spaces", () => {
+    assert.doesNotThrow(() => validatePath("C:\\Users\\John Doe\\.config"))
+  })
+
   it("accepts paths with dots and dashes", () => {
     assert.doesNotThrow(() => validatePath("./dir/file-name.ext"))
   })

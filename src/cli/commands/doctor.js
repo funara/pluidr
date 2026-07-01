@@ -6,6 +6,13 @@ import { findSqueezePath } from "../../core/squeezeInstaller.js"
 const EXPECTED_PROMPT_COUNT = 18
 const PLUGIN_FILES = ["pluidr-flow.js", "pluidr-squeeze.js"]
 
+export function cleanJsonc(content) {
+  return content.replace(
+    /\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)|(,\s*(?=[\]}]))/g,
+    (m, g1, g2) => g1 ? "" : g2 ? "" : m
+  )
+}
+
 export function collectChecks() {
   const configDir = getConfigDir()
   const configPath = getConfigPath()
@@ -67,7 +74,7 @@ export function collectChecks() {
   if (configExists) {
     try {
       const content = readFileSync(configPath, "utf-8")
-      const cleaned = content.replace(/\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (m, g) => g ? "" : m)
+      const cleaned = cleanJsonc(content)
       JSON.parse(cleaned)
       configValid = true
     } catch {

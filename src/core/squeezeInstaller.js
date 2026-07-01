@@ -26,7 +26,7 @@ export function platformAsset() {
 }
 
 export function validatePath(path) {
-  if (!/^[a-zA-Z0-9_\-\.\:\/\\]+$/.test(path)) {
+  if (!/^[a-zA-Z0-9_\-\.\:\/\\ ]+$/.test(path)) {
     throw new Error(`Invalid path: "${path}" contains unsafe characters`)
   }
 }
@@ -53,10 +53,7 @@ function extract(archivePath, destDir) {
     execFileSync("powershell", [
       "-NoProfile",
       "-Command",
-      "Expand-Archive",
-      "-LiteralPath", archivePath,
-      "-DestinationPath", destDir,
-      "-Force"
+      `Expand-Archive -LiteralPath '${archivePath}' -DestinationPath '${destDir}' -Force`
     ], { stdio: "ignore" })
   } else {
     execFileSync("tar", ["-xzf", archivePath, "-C", destDir], { stdio: "ignore" })
