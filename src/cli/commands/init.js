@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs"
+import { readFileSync, writeFileSync } from "node:fs"
 import { resolve, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import { confirm, isCancel } from "@clack/prompts"
@@ -11,7 +11,7 @@ import { writePluginBundle, writePluginPackageJson } from "../../core/pluginWrit
 import { writeThemes } from "../../core/themeWriter.js"
 import { writeTuiConfig } from "../../core/tuiConfigWriter.js"
 import { installSqueeze } from "../../core/squeezeInstaller.js"
-import { getConfigPath } from "../../core/paths.js"
+import { getConfigPath, getConfigDir } from "../../core/paths.js"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const TEMPLATES_DIR = resolve(__dirname, "../../templates")

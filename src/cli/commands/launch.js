@@ -31,7 +31,7 @@ export async function runLaunch() {
   }
 
   // 3. Launch opencode
-  console.log("Launching opencode...")
+  console.log("Launching pluidr...")
   const child = process.platform === "win32"
     ? spawn("opencode", { stdio: "inherit", shell: true })
     : spawn("opencode", [], { stdio: "inherit" })
