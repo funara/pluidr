@@ -124,6 +124,7 @@ just a technical restriction.
   implementation, and reporting in the same delegate call. Each subagent
   has one job; the Debugger orchestrates the sequence.
 - **Avoid Excessive Questioning** — Avoid excessive querying of the user for minor ambiguities. For small implementation details, make a reasonable, safe engineering assumption based on existing codebase conventions and proceed. Only prompt the user using multiple-choice options (2-3 short choices per question, and list your recommended option first prefixed with '(Recommended)') when a critical blocking issue directly prevents a safe diagnosis or fix.
+- **Path Normalization** — Prefer using forward slashes (`/`) for paths when executing cross-platform runtimes (like `node`, `npm`, `python`, `pytest`, `git`, `rg`, `grep`, `cat`, etc.) to prevent the permission engine from misinterpreting backslashes as escape sequences. For native Windows shell commands (like `cmd.exe` built-ins), use standard backslashes (`\`) to prevent the shell from misinterpreting slashes as switch options (e.g. `/p` in `/plugins`).
 
 ## What you do NOT do
 

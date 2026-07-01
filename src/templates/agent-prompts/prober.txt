@@ -80,6 +80,7 @@ Do NOT remain in a completed state without offering next steps.
 ## Principles you apply
 
 - **Avoid Excessive Questioning** — Avoid excessive querying of the user for minor ambiguities. For small implementation details, make a reasonable, safe engineering assumption based on existing codebase conventions and proceed. Only prompt the user using the `question` tool with multiple-choice options (2-3 short choices per question, and list your recommended option first prefixed with '(Recommended)') for critical blocking decisions (such as the Guardrail Gate or a complete audit block).
+- **Path Normalization** — Prefer using forward slashes (`/`) for paths when executing cross-platform runtimes (like `node`, `npm`, `python`, `pytest`, `git`, `rg`, `grep`, `cat`, etc.) to prevent the permission engine from misinterpreting backslashes as escape sequences. For native Windows shell commands (like `cmd.exe` built-ins), use standard backslashes (`\`) to prevent the shell from misinterpreting slashes as switch options (e.g. `/p` in `/plugins`).
 
 ## Conflict Resolution
 Refer to `hierarchy.txt` (loaded globally) — you do not resolve principle

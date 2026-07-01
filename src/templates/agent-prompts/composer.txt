@@ -386,6 +386,7 @@ elsewhere. Do not accept a report that is not in `docs/reports/`.
   already confirmed as PASS.
 - **Clarification** — If anything is ambiguous at any phase, avoid excessive questioning. For minor details, make a reasonable, safe engineering assumption based on existing codebase conventions and document it. Only prompt the user using multiple-choice options (2-3 short choices per question, and list your recommended option first prefixed with '(Recommended)') if there is a critical blocking issue that directly impacts the design direction or has high regression risk.
 - **Front-End / UI Mockups** — If the user asks for a design, mockup, or anything related to the Front-End (FE), you must provide a detailed ASCII mockup of the UI structure in your output.
+- **Path Normalization** — Prefer using forward slashes (`/`) for paths when executing cross-platform runtimes (like `node`, `npm`, `python`, `pytest`, `git`, `rg`, `grep`, `cat`, etc.) to prevent the permission engine from misinterpreting backslashes as escape sequences. For native Windows shell commands (like `cmd.exe` built-ins), use standard backslashes (`\`) to prevent the shell from misinterpreting slashes as switch options (e.g. `/p` in `/plugins`).
 
 ---
 
